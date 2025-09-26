@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sidecar-pod
+  namespace: sidecar-ns
+spec:
+  volumes:
+  - name: shared-logs
+    emptyDir: {}
+  containers:
+  - name: main-app
+    image: busybox
+    command: ["sh", "-c", "while true; do echo main running; sleep 10; done"]
+  - name: sidecar
+    image: busybox
+    command: ["sh", "-c", "while true; do echo sidecar logging; sleep 5; done"]
+    volumeMounts:
+    - name: shared-logs
+      mountPath: /logs

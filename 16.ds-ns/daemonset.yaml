@@ -1,0 +1,23 @@
+#apiVersion: v1
+#kind: Namespace
+#metadata:
+#  name: ds-ns
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: busybox-agent
+  namespace: ds-ns
+spec:
+  selector:
+    matchLabels:
+      name: busybox-agent
+  template:
+    metadata:
+      labels:
+        name: busybox-agent
+    spec:
+      containers:
+      - name: busybox
+        image: busybox
+        command: ["sleep", "3600"]

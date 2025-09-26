@@ -1,0 +1,19 @@
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: high-priority
+value: 100000
+globalDefault: false
+description: "High priority pods"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: priority-pod
+  namespace: priority-ns
+spec:
+  priorityClassName: high-priority
+  containers:
+  - name: sleep
+    image: busybox
+    command: ["sleep", "3600"]

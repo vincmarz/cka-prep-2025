@@ -1,0 +1,31 @@
+# Cert-manager installation steps (via Helm)
+# Requires CRDs to be installed manually first or with --set installCRDs=true
+# Cert-manager namespace must be created
+
+# Installation steps:
+# kubectl create namespace cert-ns
+# helm repo add jetstack https://charts.jetstack.io
+# helm repo update
+# helm install cert-manager jetstack/cert-manager --namespace cert-ns --version v1.14.4 --set installCRDs=true
+
+# Example test certificate issuer (self-signed)
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-cluster-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: example-cert
+  namespace: cert-ns
+spec:
+  dnsNames:
+  - example.com
+  secretName: example-cert-tls
+  issuerRef:
+    name: selfsigned-cluster-issuer
+    kind: ClusterIssuer

@@ -1,0 +1,8 @@
+# Chart install via Helm 3 (no CRDs)
+# NOTE: This is just for reference. Installation must be done with Helm command.
+# Namespace 'argocd-ns' must exist before install.
+
+# Helm chart command to run:
+# helm repo add argo https://argoproj.github.io/argo-helm
+# helm repo update
+# helm install argocd argo/argo-cd --version 7.8.0 --namespace argocd-ns --skip-crds

@@ -1,0 +1,26 @@
+# Project Calico network plugin installation
+# Only applies if cluster not already using CNI
+# Apply only once per cluster
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: calico-node
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: calico-node
+  template:
+    metadata:
+      labels:
+        k8s-app: calico-node
+    spec:
+      containers:
+      - name: calico-node
+        image: calico/node:v3.27.0
+        env:
+        - name: CALICO_NETWORKING_BACKEND
+          value: "bird"
+        - name: IP_AUTODETECTION_METHOD
+          value: "interface=eth0"

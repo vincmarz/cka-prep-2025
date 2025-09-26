@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-welcome
+  namespace: gateway-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-welcome
+  template:
+    metadata:
+      labels:
+        app: nginx-welcome
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:stable-alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: welcome-page
+          mountPath: /usr/share/nginx/html/index.html
+          subPath: index.html
+      volumes:
+      - name: welcome-page
+        configMap:
+          name: nginx-welcome-page
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-welcome-page
+  namespace: gateway-ns
+data:
+  index.html: |
+    <html>
+      <head><title>Welcome</title></head>
+      <body>
+        <h1>Welcome to Gateway</h1>
+      </body>
+    </html>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-welcome
+  namespace: gateway-ns
+spec:
+  selector:
+    app: nginx-welcome
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

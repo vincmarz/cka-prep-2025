@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hpa-app
+  namespace: hpa-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hpa-app
+  template:
+    metadata:
+      labels:
+        app: hpa-app
+    spec:
+      containers:
+      - name: hpa-app
+        image: k8s.gcr.io/hpa-example
+        ports:
+        - containerPort: 80
+        resources:
+          limits: 
+            cpu: "500m"
+          requests:
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hpa-app
+  namespace: hpa-ns
+  labels:
+    app: hpa-app
+spec:
+  ports:
+  - port: 80
+  selector:
+    app: hpa-app 
+---
+#apiVersion: autoscaling/v1
+#kind: HorizontalPodAutoscaler
+#metadata:
+#  name: hpa-app
+#  namespace: hpa-ns
+#spec:
+#  scaleTargetRef:
+#    apiVersion: apps/v1
+#    kind: Deployment
+#    name: hpa-app
+#  minReplicas: 1
+#  maxReplicas: 5
+#  targetCPUUtilizationPercentage: 50

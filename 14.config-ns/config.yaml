@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: config-ns
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+  namespace: config-ns
+data:
+  myconfig.txt: |
+    Questo è il contenuto della config
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+  namespace: config-ns
+type: Opaque
+data:
+  password: cGFzc3dvcmQ=  # base64 per 'password'
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: config-secret-pod
+  namespace: config-ns
+spec:
+  containers:
+  - name: app
+    image: busybox
+    command: ["sh", "-c", "echo Password: $PASSWORD && sleep 3600"]
+    env:
+    - name: PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: my-secret
+          key: password
+    volumeMounts:
+    - name: config-volume
+      mountPath: /etc/config
+  volumes:
+  - name: config-volume
+    configMap:
+      name: my-config
