@@ -5,11 +5,11 @@ Creare un HPA per scalare automaticamente un deployment in base all'utilizzo del
 Il deployment hpa-app deve avere un minimo di 1 e un massimo di 5 pod e lavorare con una
 percentuale di CPU al 50%.
 
-Preparazione:
+**Preparazione:**
 ```
 k apply -f 01.hpa-ns/hpa.yaml
 ```
-Risoluzione:
+**Risoluzione:**
 ```
 kubectl autoscale deployment hpa-app --cpu-percent=50 --min=1 --max=5
 
@@ -26,11 +26,11 @@ so that the load generation continues and you can carry on with the rest of the 
 kubectl -n hpa-ns run -i --tty load-generator --rm --image=busybox:1.28 --restart=Never -- /bin/sh -c "while sleep 0.01; do wget -q -O- http://hpa-app; done"
 ```
 ### 2. Installazione CRI-O (su nodo Linux Ubuntu 24.04)
-Obiettivo:
+**Obiettivo:**
 
 Installare CRI-O su un nodo.
 
-Risoluzione: 
+**Risoluzione:** 
 
 OS=xUbuntu_22.04
 VERSION=1.24
@@ -68,11 +68,11 @@ sudo apt info cri-o
 sudo systemctl status crio
 ```
 ### 3. ArgoCD via Helm 3 (argocd-ns)
-Obiettivo:
+**Obiettivo:**
 
 Installare ArgoCD v.7.8 senza CRD.
 
-Risoluzione: 
+**Risoluzione:** 
 ```
 kubectl create ns argocd-ns
 helm repo add argo https://argoproj.github.io/argo-helm
@@ -118,46 +118,47 @@ NAME                                             READY   AGE
 statefulset.apps/argocd-application-controller   1/1     108s
 ```
 
-
 ### 4. PriorityClass (priority-ns)
-Obiettivo:
+**Obiettivo:**
 
 Creare una PriorityClass high-priority e creare un pod che la utilizzi in un pod con immagine busybox.
 
-Risoluzione:
+**Risoluzione:**
 
 Creare la priorityclass con il nome high-priority, valore 100000 e descrizione "High priority pods":
 
+```
 k create priorityclass high-priority --value=100000 --global-default=false --description="High priority pods"
 
 k -n priority-ns run priority-pod --image=busybox --dry-run=client -o yaml  -- sh -c 'sleep 3600'  > pod-pc.yaml
-
+```
 Editare pod-pc.yaml e aggiungere dopo .spec:
-
+```
 priorityClassName: high-priority
-
+```
 Creare il pod:
-
+```
 k apply -f pod-pc.yaml
-
+```
 Check:
-
+```
 k -n priority-ns get pods -n priority-ns --sort-by=.spec.priority
-
+```
 ### 5. Ingress Setup (ingress-ns)
-Obiettivo:
+**Obiettivo:**
 
 Creazione di un ingress Nginx
 
 Prerequisito: controller Nginx Ingress installato.
 
-Preparazione:
+**Preparazione:**
+```
 k apply -f 05.ingress-ns/ingress.yaml 
-
-Risoluzione:
+```
+**Risoluzione:**
 
 05.ingress.yaml
---------------------------------------------------
+```
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -182,12 +183,12 @@ spec:
 k apply -f 05.ingress.yaml
 
 kubectl get ingress -n ingress-ns
-
+```
 Nota:
 Aggiungere web.local a /etc/hosts
 
 Test (valido con plugin CNI Calico) :
-
+```
 k -n ingress-ns get po -owide
 NAME                   READY   STATUS    RESTARTS   AGE    IP           NODE          NOMINATED NODE   READINESS GATES
 web-78df96f968-n8gl8   1/1     Running   0          108m   10.0.3.121   worker2-k8s   <none>           <none>
@@ -197,9 +198,9 @@ PING worker2-k8s (192.168.122.176) 56(84) bytes of data.
 
 /etc/hosts
 192.168.122.176 worker2-k8s web.local
-
+```
 Verificare su quale porta NoePort risulta associata la porta 80 dell'ingress controller:
-
+```
 k -n ingress-nginx get all
 NAME                                            READY   STATUS    RESTARTS      AGE
 pod/ingress-nginx-controller-58954d6d98-xnsgr   1/1     Running   2 (26m ago)   13h
@@ -238,18 +239,19 @@ Commercial support is available at
 <p><em>Thank you for using nginx.</em></p>
 </body>
 </html>
+```
 
-
-6. Resource Quota + WordPress (quota-ns)
-Obiettivo:
+### 6. Resource Quota + WordPress (quota-ns)
+**Obiettivo:**
 
 Creazione di una resource quota per un WordPress impostando la request CPU a 500 millicore, la request memory a 512 MB, 1 CPU come limit e 1 GB come limit memory.  
 
-Preparazione:
+**Preparazione:**
+```
 k apply -f 06.quota-ns/quota.yaml
-
-Risoluzione:
-
+```
+**Risoluzione:**
+```
 kubectl -n quota-ns create quota wordpress-quota --hard=requests.cpu=1,requests.memory=512Mi,limits.cpu=1,limits.memory=1Gi
 
 kubectl describe quota wordpress-quota -n quota-ns
@@ -266,16 +268,16 @@ kubectl get pods -n quota-ns
 NAME                         READY   STATUS    RESTARTS   AGE
 mysql-57584b8d9c-ln6x6       1/1     Running   0          11m
 wordpress-5784f757f5-h8ghm   1/1     Running   0          8m28s
+```
 
-
-7. PVC + Pod (pvc-ns)
-Obiettivo:
+### 7. PVC + Pod (pvc-ns)
+**Obiettivo:**
 
 Creazione di un PVC wp-pvc e associazione ad un pod Nginx. Creare anche un PV corrispondente.
 
-Prerequisito:
+**Prerequisito:**
 Installare una storage class di tipo locale, ad esempio:
-
+```
 Name:            local-path
 IsDefaultClass:  No
 Annotations:     kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"storage.k8s.io/v1","kind":"StorageClass","metadata":{"annotations":{},"name":"local-path"},"provisioner":"rancher.io/local-path","reclaimPolicy":"Delete","volumeBindingMode":"WaitForFirstConsumer"}
@@ -287,14 +289,14 @@ MountOptions:          <none>
 ReclaimPolicy:         Delete
 VolumeBindingMode:     WaitForFirstConsumer
 Events:                <none>
+```
 
-
-Risoluzione:
+**Risoluzione:**
 
 Creare il PV: 
 
 07.pv.yaml
-----------------------------
+```
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -307,11 +309,11 @@ spec:
   - ReadWriteOnce
   hostPath:
     path: /usr/share/nginx/html  
-
+```
 
 Creare il PVC:
 07.pvc.yaml
-----------------------------
+```
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -323,13 +325,14 @@ spec:
   resources:
     requests:
       storage: 1Gi
-
+```
 
 Create il manifest YAML per il pod:
+```
 k -n pvc-ns run pvc-pod --image=nginx --dry-run=client > 08.pod.yaml
-
+```
 Editare il file 08.pod.yaml aggiungendo le seguenti righe:
-
+```
 apiVersion: v1
 kind: Pod
 metadata:
@@ -349,22 +352,24 @@ spec:
       claimName: wp-pvc                    # ADD
   dnsPolicy: ClusterFirst
   restartPolicy: Always
-
+```
 Verifica:
+```
 kubectl get pvc -n pvc-ns
 kubectl get pod pvc-pod -n pvc-ns
-
-8. Sidecar Container (sidecar-ns)
-Obiettivo:
+```
+### 8. Sidecar Container (sidecar-ns)
+**Obiettivo:**
 
 Creazione di un side-container in un pod. Creare un pod sidecar-pod con due container con immagine busybox:1.28: il primo chiamato main-app che esegua il comando
 "while true; do echo 'main running' >> /var/log/main-app.log; sleep 10; done" e il secondo sidecar che esegua il comando "tail -n+1 -f /var/log/main-app.log". 
 
-Risoluzione:
-
+**Risoluzione:**
+```
 k -n sidecar-ns run sidecar-pod --image=busybox:1.28 --dry-run=client -o yaml > 08.pod.yaml
+```
 Editare 08.pod.yaml:
--------------------------------
+```
 apiVersion: v1
 kind: Pod
 metadata:
@@ -376,25 +381,26 @@ metadata:
 spec:
   containers:
   - image: busybox:1.28
-    name: main-app                     										# CHANGE
+    name: main-app                     										 								# CHANGE
     command: [ "sh", "-c", "while true; do echo 'main running' >> /var/log/main-app.log; sleep 10; done" ] 	# ADD 
-  - image: busybox:1.28												# ADD
-    name: sidecar												# ADD	
-    command: [ "sh", "-c", "tail -n+1 -f /var/log/main-app.log" ]    						# ADD
+  - image: busybox:1.28																						# ADD
+    name: sidecar																							# ADD	
+    command: [ "sh", "-c", "tail -n+1 -f /var/log/main-app.log" ]    										# ADD
     resources: {}
-    volumeMounts:												# ADD
-    - name: shared-logs												# ADD
-      mountPath: /var/log											# ADD
-  volumes:													# ADD			
-  - name: shared-logs												# ADD
-    emptyDir: {}     												# ADD
+    volumeMounts:																							# ADD
+    - name: shared-logs																						# ADD
+      mountPath: /var/log																					# ADD
+  volumes:																									# ADD			
+  - name: shared-logs																						# ADD
+    emptyDir: {}     																						# ADD
   dnsPolicy: ClusterFirst
   restartPolicy: Always
 status: {}
 
 kubectl apply -f 08.pod.yaml
-
+```
 Check:
+```
 kubectl get pods -n sidecar-ns
 NAME              READY   STATUS    RESTARTS   AGE
 pod/sidecar-pod   2/2     Running   0          5s
@@ -411,22 +417,23 @@ main running
 main running
 main running
 [...]
+```
 
-9. HTTP Gateway 
-Obiettivo:
+### 9. HTTP Gateway 
+**Obiettivo:**
 
 Creazione di un HTTPGateway e associazione ad un pod. Nel namespace gateway-ns è presente un deployment nginx-welcome, un service e una configmap. Esporre l'applicazione
 utilizzando un gateway sulla porta 80 e creare un HTTPGateway.
 
-Requisito: NGINX Gateway Fabric installato sul cluster Kubernetes.
+**Requisito:** NGINX Gateway Fabric installato sul cluster Kubernetes.
 
-Risoluzione:
+**Risoluzione:**
 Per il traffico HTTP ruotato da un service utilizzando un Gateway a una HTTPRoute avremo:
 
 client--->(HTTP Request)--->Gateway--->HTTPRoute--->(Routing rule)--->Service|--->POD
                                                                              |--->POD   
 Verificare quali sono le CRD gateway installate:
-
+```
 k get crd | grep -i gateway
 clientsettingspolicies.gateway.nginx.org              2025-09-15T15:36:27Z
 gatewayclasses.gateway.networking.k8s.io              2025-09-15T15:36:18Z  
@@ -439,17 +446,17 @@ observabilitypolicies.gateway.nginx.org               2025-09-15T15:36:28Z
 referencegrants.gateway.networking.k8s.io             2025-09-15T15:36:19Z
 snippetsfilters.gateway.nginx.org                     2025-09-15T15:36:28Z
 upstreamsettingspolicies.gateway.nginx.org            2025-09-15T15:36:28Z
-
+```
 Non occorre creare una gatewayclass in quanto risulta già installata:
-
+```
 k get gatewayclasses.gateway.networking.k8s.io -A
 NAME               CONTROLLER                                   ACCEPTED   AGE
 nginx              gateway.nginx.org/nginx-gateway-controller   True       5d1h
-
+```
 Creare un API gateway con un listener sulla porta 80: 
 
 09.gateway.yaml
-----------------------
+```
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
@@ -466,11 +473,11 @@ spec:
       	from: Same	
 
 k apply -f 09.gateway.yaml
-
+```
 Creare un HTTPRoute con una route su / per l'applicazione http-echo:
 
 09.httproute.yaml
------------------------------------------
+```
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -490,11 +497,11 @@ spec:
       port: 8080
 
 k apply -f 09.httproute.yaml
-
+```
 Check:
 
 Verificare su quale porta è in ascolto il service dell'NGINX Gateway:
-
+```
 k -n nginx-gateway get all
 NAME                                READY   STATUS    RESTARTS       AGE
 pod/nginx-gateway-96f76cdcf-9m8pw   2/2     Running   19 (35m ago)   6d
@@ -507,9 +514,9 @@ deployment.apps/nginx-gateway   1/1     1            1           6d
 
 NAME                                      DESIRED   CURRENT   READY   AGE
 replicaset.apps/nginx-gateway-96f76cdcf   1         1         1       6d
-
+```
 Dopo aver aggiunto l'hostname mygateway al file /etc/hosts:
-
+```
 curl mygateway:30525
 <html>
   <head><title>Welcome</title></head>
@@ -517,26 +524,26 @@ curl mygateway:30525
     <h1>Welcome to Gateway</h1>
   </body>
 </html>
+```
 
 
-
-10. Cert-Manager + Self-Signed Cert (cert-ns)
-Obiettivo:
+### 10. Cert-Manager + Self-Signed Cert (cert-ns)
+**Obiettivo:**
 
 Installazione di CertManager 
 a. Creazione di un certificato self-signed.
 b. Creazione di un certificato firmato da una Root CA.
 
-Risoluzione:
-
+**Risoluzione:***
+```
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
 helm install cert-manager jetstack/cert-manager --namespace cert-ns --version v1.14.4 --set installCRDs=true
-
+```
 
 Dopo l'installazione sono disponibili le seguenti API resources:
-
- k api-resources  | grep cert
+```
+k api-resources  | grep cert
 challenges                                           acme.cert-manager.io/v1             true         Challenge
 orders                                               acme.cert-manager.io/v1             true         Order
 certificaterequests                 cr,crs           cert-manager.io/v1                  true         CertificateRequest
@@ -544,9 +551,10 @@ certificates                        cert,certs       cert-manager.io/v1         
 clusterissuers                                       cert-manager.io/v1                  false        ClusterIssuer
 issuers                                              cert-manager.io/v1                  true         Issuer
 certificatesigningrequests          csr              certificates.k8s.io/v1              false        CertificateSigningRequest
-
+```
 
 Per generare un certificato: 
+```
 k explain cert
 GROUP:      cert-manager.io
 KIND:       Certificate
@@ -584,12 +592,12 @@ FIELDS:
     Status of the Certificate. This is set and managed automatically. Read-only.
     More info:
     https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
-
+```
 a.
 Creare prima un ClusterIssuer quindi un Certificate self-signed:
 
 10.clusterissuer.yaml
--------------------------------------
+```
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
@@ -599,11 +607,12 @@ spec:
 
 
 kubectl apply -f 10.clusterissuer.yaml
+```
 
 Quindi il certificato:
 
 10.certificate.yaml
--------------------------------------
+```
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -657,14 +666,13 @@ Events:
   Normal  Issuing    13s   cert-manager-certificates-trigger          Issuing certificate as Secret does not exist
   Normal  Generated  13s   cert-manager-certificates-key-manager      Stored new private key in temporary Secret resource "my-cert-sd6f9"
   Normal  Requested  13s   cert-manager-certificates-request-manager  Created new CertificateRequest resource "my-cert-1"
-
-
- k -n cert-ns get certificate
+```
+```
+k -n cert-ns get certificate
 NAME      READY   SECRET        AGE
 my-cert   False   my-cert-tls   66s
 
- 
- k -n cert-ns get secret my-cert-sd6f9 -o yaml
+k -n cert-ns get secret my-cert-sd6f9 -o yaml
 apiVersion: v1
 data:
   tls.key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2Z0lCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktnd2dnU2tBZ0VBQW9JQkFRRFZza3kyOEMvczByWFQKWmxMUGprWWpIbS9yNjRuekcrdFd4QXlEWGcvWFE5YVBib21ucWQ3bjQrbyswT2Y4dU50enNPR2FlRXRwZnplMQpFeEtzTitCU1hwV0JRK1M5MUgxZmtiaTBEc2RINkJaOWc1dldXVXh6UmphTFRTejAyRWRnYXZGNGVyS1pOOE92CmR6Y3JWamJZR2UwTnhmcTNCMDJMUlpDYkdnc3g4VnoyVmJTZVdDazhFS21ra3ZiRksra2dIcjE4T0hkbmc3bDEKUm9EMHN2Q3g4US85czVQQ3dWVHRjNzRObkFPeEE0ZGZ1RzA2MzdNR2p5NFR0SzhtdVlneWhsU3VoMmdONVdUdApYQnhSdm1CN1ZrM2ltc0ZWRlY5UzhaaVVqdmNDVGJlMG1oR2QyY1kxUE1RKzVzNkRXYVVzeDVoeUk0TzFjWTZOCjV2QmpMUkVuQWdNQkFBRUNnZ0VBS3Y3ZTFJZnEvSmxBb0RJY1EwcDY3aUgzbnQ0Yk9XREtyd0J2REJkbTFJYi8KcW9neEJoejFqbTZhK055TGNKdTQrOFFCQUZWbnh1Z2p5emoxTHRWbk91dHc1VHRGMExQcUxjcGlBVWhmN0NYVQpNSmpFU0JKYmdXNEZGMjRGdDVXMGRyL05xZEgyRVVIWkMzclBETmNoM2NVSm54WFFaZmNBTVI5a0F2RHdnN0dQCjVzd2hkL05XcmNzTmQxVVJBdTd6S1VZUHZyWmVLSWw3czUvTU4vRFkvbExjSlhxLytIa2IxN2pGM1JWdWh3SDAKYXQxWWlPVFVmM2tGRHJJVFdmd01IV3plYUw1OGdWbjhROXVrQ3ZhUHBEM1l4NmNhYkNZRnZKRVVKbERYTGpMUApURHRRSEZhbDdXZllRNElwNTFKZE50cExHNVFDM3ZGVjFEUEthbXh2RVFLQmdRRFdBVGdwK2hjM2x5dzdGT2pqCkxoRGlSSUN5SDVLa2FqT1FHOVlsa2lSMkRtUnRuT1VGWTB0L2NHbEI3Uk9KK2JWNEdkYmY0aWpwVzVzQ0ZkL2kKblhKMFVEUVlkOVVwTWFaeFJsL3pNNzRIZGc2TXd3Qm54MC9keWZ6THk2S3Vsc0JmZndCbEdyNS8vc05pSUs4WQpTQ0ZQVDVuNWtqRFFldHdaS3h1NTlQZHNOUUtCZ1FEL29aZnM5SWxaRUJEVDc3ZVZGYzQ0bC9RUjNzTUJ1TjFNCjd5SjRDOEMrbXhaa0F4aE5ud0NrUnFFbVVWRHJLb0JhdmFKdGdJYXd1OUNpQ1pNUGVmT3J3VGhEQkNtTEFkeWEKN2xEWlJkMzQ1ektjam1KdlBDVHBSbGs4bjlLV2ZEWEJpRXRaV05pRm5wNDlESURXbisvOGlKUkpFS2dqdktnOApvSFkwTEp4YmF3S0JnQ1EzY3B6UUFTdmNQcFVGRmVDVWhERDJyTno0TU9YNFB4K3RSbEYzYVFvOXAwdFJtUVNQCmFGQjU0cVpRaTlUMjJIb3B6VTU0UkxveFVZdEp6bWpZZ20waXdaNCtjV21XU0hlMUZEbmhVTkNNYnl2dE9GMVgKd3JGakpKQU10MHhhb05YSWRYV20wQVJ6UmZlT1ZuT0NpWGlWblJZNllsNTEzRmU2RHVncWg5RGRBb0dCQUoxSApUUFFyV0Q0RjFuU3ZMcUo1Y2hINzI5MEswNnhCazFiOFlwYTlsRzh4ZUVzOFpEMk5zSlZpSjFBdUE3MU12d0FWCllOUkNtWnd2VWlRQUJBMG5tVFo1Z1NZcWIyenBUbE84Z04zTlVNOE5ZR1JXYmxYR0NXZkZNcTVNSHdNYmxPOW4KN2dRZzE4Y09Xb2x4SWV2ckozcVdoYldXbS95dzNFbkE2RGtkb1czVkFvR0JBSy95YWgxZ0tJRzFFOFRyREVlbQo4UXYwSUxBdExIOFBQeWRFSjVBaEhLSFcyTFI3Y3AzeWY0WTRYakhycGxWZktoZFRQbUhhNnhVVTBOb2EveFBYCk9FLzNqR2daYTRUVjRJYmo2OENUeGROb1hNOXR1N25YalZwUWVXbmphNHdkVUFsMzBCTFJtME9MUFdBYWZlckkKS1dhRkpid1BhKzZ6c2Y2aTMwcVRtZk5sCi0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
@@ -717,6 +725,7 @@ YNRCmZwvUiQABA0nmTZ5gSYqb2zpTlO8gN3NUM8NYGRWblXGCWfFMq5MHwMblO9n
 OE/3jGgZa4TV4Ibj68CTxdNoXM9tu7nXjVpQeWnja4wdUAl30BLRm0OLPWAaferI
 KWaFJbwPa+6zsf6i30qTmfNl
 -----END PRIVATE KEY-----
+```
 
 b. Per avere un certificato firmato da una Root CA self-signed occorrono:
 1b. una Root CA self-signed
@@ -728,7 +737,7 @@ b. Per avere un certificato firmato da una Root CA self-signed occorrono:
 [https://cert-manager.io/docs/configuration/selfsigned/#bootstrapping-ca-issuers]
 
 10.rootca.yaml
-------------------------------------
+```
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -743,12 +752,12 @@ spec:
     kind: ClusterIssuer
 
 k apply -f 10.rootca.yaml
-
+```
 2b. Per poter emettere certificati è necessario prima configurare una risorsa Issuer o clusterIssuer.
 Creare un issuer che usa la Root CA. 
 
 10.issuerca.yaml
-------------------------------------
+```
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
@@ -757,11 +766,11 @@ metadata:
 spec:
   ca:
     secretName: root-ca-tls
- 
+```
 3b. Creare un personal certificate firmato dalla Root CA:
 
 10.mycertificate.yaml
--------------------------------------
+```
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -800,9 +809,9 @@ metadata:
   resourceVersion: "491161"
   uid: 079bf79b-5fa5-4c75-ac22-0724c5ad4188
 type: kubernetes.io/tls
+```
 
-
-
+```
 kubectl get secret my-certificate-tls -n cert-ns -o jsonpath='{.data.tls\.crt}' | base64 -d | openssl x509 -noout -text
 Certificate:
     Data:
@@ -865,10 +874,9 @@ Certificate:
         94:47:7b:97:fd:d9:3f:d9:a8:f0:df:5e:70:f3:48:ab:dc:22:
         49:fc:5b:82
 
+```
 
-
-
-11. Calico Network Plugin (network-ns)
+### 11. Calico Network Plugin (network-ns)
 Obiettivo:
 
 Installazione del plugin di Network Calico.
@@ -1422,5 +1430,6 @@ Per visualizzare la CRD e l’oggetto:
 
 kubectl get crd myapps.example.com
 kubectl get myapp -n crd-ns	
+
 
 
