@@ -876,19 +876,19 @@ Certificate:
 
 ```
 
-### 11. Calico Network Plugin (network-ns)
-Obiettivo:
+### 11. Calico Network Plugin (network-ns) ###
+**Obiettivo:**
 
 Installazione del plugin di Network Calico.
 
-Nota: Solo su cluster non gestito (bare metal, kubeadm). Evitare se CNI già presente.
+**Nota:** Solo su cluster non gestito (bare metal, kubeadm). Evitare se CNI già presente.
 
-Risoluzione:
+**Risoluzione:**
 
 Installare il daemonset di Calico:
 
 calico.yaml
------------------------------------------------
+```
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -911,26 +911,28 @@ spec:
           value: "bird"
         - name: IP_AUTODETECTION_METHOD
           value: "interface=eth0"
-
+```
+```
 kubectl apply -f network-ns/calico.yaml
-
+```
 Verifica assegnazione IP:
-
+```
 kubectl get pods -o wide
+```
 
-
-12 — RBAC 
-Obiettivo: 
+### 12. RBAC 
+**Obiettivo:**
 
 Nel namespace rbac-ns creare una Role pod-reader-role che permetta di leggere i pod con i verbi get,watch e list, un ServiceAccount pod-reader, e legare il tutto con un RoleBinding.
 
-Risoluzione:
+**Risoluzione:**
 
 Creare il serviceaccount:
+```
 k -n rbac-ns create sa pod-reader
-
+```
 Esportare lo YMAL del pod e cambiare il service account:
------------------------------------------------------------
+```
 apiVersion: v1
 kind: Pod
 [...]
@@ -958,11 +960,13 @@ spec:
   serviceAccountName: pod-reader					# CHANGE
   terminationGracePeriodSeconds: 30
 [...]
-
+```
 Sostituire il pod in esecuzione:
+```
 k delete -f prep01/12.pod.yaml
 k apply -f prep01/12.pod.yaml
-
+```
+```
 k -n rbac-ns exec -it pods/rbac -- bin/sh
 / # TOKEN=$( cat /var/run/secrets/kubernetes.io/serviceaccount/token )
 / # curl  -kH "Authorization: Bearer ${TOKEN}" https://kubernetes.default/api/v1/namespaces/rbac-ns/pods
@@ -971,22 +975,23 @@ exit
 Check:
 k -n rbac-ns auth can-i get po --as=system:serviceaccount:rbac-ns:pod-reader
 yes
+```
 
-13 — Node Affinity + Tolerations (scheduling-ns)
-Obiettivo: 
+### 13. Node Affinity + Tolerations (scheduling-ns)
+**Obiettivo:**
 
 Schedulare pod su un nodo con etichetta specifica e tollerare un taint.
 
-Risoluzione:
+**Risoluzione:**
 Aggiungere un taint ai nodi del cluster:
-
+```
 k taint node worker1-k8s worker2-k8s worker3-k8s key1=value1:NoSchedule
-
+```
 
 Creare il pod affinity-pod che venga schedulato sul nodo worker1-k8s del cluster Kubenernetes: 
 
 13.pod.yaml
----
+```
 apiVersion: v1
 kind: Pod
 metadata:
@@ -1011,16 +1016,18 @@ spec:
   - name: busybox
     image: busybox
     command: ["sleep", "3600"]
-
+```
+```
 k apply -f 13.pod.yaml
-
+```
 Cleanup:
+```
 k taint node worker1-k8s worker2-k8s worker3-k8s key1=value1:NoSchedule-
 k delete -f 13.pod.yaml
+```
 
-
-14 — ConfigMap & Secret
-Obiettivo: 
+## 14. ConfigMap & Secret
+**Obiettivo:** 
 
 Creare un pod che monta una ConfigMap come file e legge Secret come variabile d’ambiente. 
 Creare un pod config-secret-pod che carica la ConfigMap my-config come volume al path /etc/config e che include
@@ -1028,24 +1035,27 @@ il file myconfig.txt con il contenuto: "Questo è il contenuto della config".
 Creare anche un secret my-secret che contenga la key password con valore "password".
 Il pod deve avere l'immagine busybox e deve eseguire il comando: "echo Password: $PASSWORD && sleep 3600".
 
-Preparazione:
+**Preparazione:**
 il file myconfig.txt è presente nella directory 14.config-ns
 
-Risoluzione:
+**Risoluzione:**
 
 Creare la configmap:
+```
 k -n config-ns create cm my-config --from-file=../14.config-ns/myconfig.txt
-
+```
 Creare il secret:
+```
 k -n config-ns create secret generic my-secret --from-literal=password=password
-
+```
 Creare il template del pod:
+```
 k -n config-ns run config-secret-pod --image=busybox --dry-run=client -o yaml > 14.pod.yaml 
-
+```
 Editare il file:
 
 14.pod.yaml
-----------------------------------------
+```
 apiVersion: v1
 kind: Pod
 metadata:
@@ -1058,48 +1068,50 @@ spec:
   containers:
   - image: busybox
     name: config-secret-pod
-    env:									# ADD
-    - name: PASSWORD								# ADD
-      valueFrom:								# ADD
-        secretKeyRef:								# ADD
-          key: password								# ADD
-          name: my-secret							# ADD
+    env:																# ADD
+    - name: PASSWORD													# ADD
+      valueFrom:														# ADD
+        secretKeyRef:													# ADD
+          key: password													# ADD
+          name: my-secret												# ADD
     command: [ 'sh','-c','echo Password: $PASSWORD && sleep 3600' ]		# ADD	
-    volumeMounts:								# ADD
-    - name: my-config								# ADD
-      mountPath: /etc/config							# ADD
-  volumes:									# ADD
-  - name: my-config								# ADD
-    configMap:									# ADD
-      name: my-config								# ADD
+    volumeMounts:														# ADD
+    - name: my-config													# ADD
+      mountPath: /etc/config											# ADD
+  volumes:																# ADD
+  - name: my-config														# ADD
+    configMap:															# ADD
+      name: my-config													# ADD
   dnsPolicy: ClusterFirst
   restartPolicy: Always
 status: {}
-
+```
+```
 k apply -f 14.pod.yaml
-
+```
 Check:
-
+```
 k -n config-ns exec -it pod/config-secret-pod -- env | grep password
 PASSWORD=password
 
 k -n config-ns exec -it pod/config-secret-pod -- cat /etc/config/myconfig.txt
 Questo è il contenuto della config
 
-
-15 — Troubleshooting (debug-ns)
-Obiettivo: 
+```
+### 15 . Troubleshooting (debug-ns)
+**Obiettivo:**
 
 Correggere un pod in CrashLoopBackOff (es. container con comando che fallisce).
 Nel namespace debug-ns, il pod crash-pod risulta essere in CrashLoopBackOff.
 Correggere l'errore e riavviare il pod.
 
-Risoluzione:
-
+**Risoluzione:**
+```
 k -n debug-ns get all
 NAME            READY   STATUS             RESTARTS       AGE
 pod/crash-pod   0/1     CrashLoopBackOff   5 (102s ago)   4m48s
-
+```
+```
 k -n debug-ns describe pod/crash-pod
 Name:             crash-pod
 Namespace:        debug-ns
@@ -1169,7 +1181,8 @@ Events:
   Warning  BackOff    88s (x26 over 6m54s)   kubelet            Back-off restarting failed container crash-container in pod crash-pod_debug-ns(ccfdcf95-6bf2-4e15-a074-c62530e9c1b4)
   Normal   Pulling    77s (x7 over 7m3s)     kubelet            Pulling image "busybox"
   Normal   Pulled     75s                    kubelet            Successfully pulled image "busybox" in 1.616s (1.616s including waiting). Image size: 2223685 bytes.
-
+```
+```
 k -n debug-ns edit pod/crash-pod
 [...]
 spec:
@@ -1181,33 +1194,35 @@ spec:
     name: crash-container
     resources: {}
 [...]
-
+```
 Esportare lo YAML del pod e corregere il comando:
+```
 k -n debug-ns get pod/crash-pod -o yaml > 15.pod.yaml
 
 spec:
   containers:
   - command:
-    - "sh"					# CHANGE					
-    - "-c"					# CHANGE
+    - "sh"										# CHANGE					
+    - "-c"										# CHANGE
     - "sleep 1d"                            	# CHANGE
     image: busybox
     imagePullPolicy: Always
     name: crash-container
     resources: {}
 [...]
+```
 
-
-16 — DaemonSet (ds-ns)
-Obiettivo: 
+### 16. DaemonSet (ds-ns)
+**Obiettivo:**
 
 Deploy di un agent (es. busybox) su tutti i nodi. Nel namespace ds-ns, creare un daemoset busybox-agent per deployare l'agent su tutti i nodi del cluster.
  
-Risoluzione:
-
+**Risoluzione:**
+```
 k -n ds-ns create deployment busybox-agent --image=busybox --dry-run=client -o yaml -- sleep 3600 > 16.daemonset.yaml
-
+```
 Editare il file:
+```
 apiVersion: apps/v1
 kind: DaemonSet					# CHANGE
 metadata:
@@ -1236,11 +1251,14 @@ spec:
         name: busybox
         resources: {}
 status: {}
+```
 
 Installare il daemonset:
+```
 k apply -f 16.daemonset.yaml
-
+```
 Verifica:
+```
 k -n ds-ns get all -o wide
 NAME                      READY   STATUS    RESTARTS   AGE   IP            NODE          NOMINATED NODE   READINESS GATES
 pod/busybox-agent-599nn   1/1     Running   0          18s   10.10.7.255   worker2-k8s   <none>           <none>
@@ -1249,17 +1267,18 @@ pod/busybox-agent-sppqz   1/1     Running   0          18s   10.10.159.9   worke
 
 NAME                           DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE   CONTAINERS   IMAGES    SELECTOR
 daemonset.apps/busybox-agent   3         3         3       3            3           <none>          18s   busybox      busybox   app=busybox-agent
+```
 
-
-17 — NetworkPolicy (netpol-ns)
-Obiettivo: 
+### 17. NetworkPolicy (netpol-ns)
+**Obiettivo:** 
 
 Bloccare tutto il traffico di rete tra pod nel namespace. Nel namespace netpol-ns, ci sono il pod web che espone il service web e il pod app. Creare una NetworkPolicy deny-all che blocchi 
 il traffico di rete tra pod nel namespace.
 
-Risoluzione:
+**Risoluzione:**
 
 Verificare che il traffico è consentito tra i pod:
+```
 k -n netpol-ns exec -it pod/app -- bin/sh
 / # curl http://web
 <!DOCTYPE html>
@@ -1285,8 +1304,9 @@ Commercial support is available at
 <p><em>Thank you for using nginx.</em></p>
 </body>
 </html>
-
+```
 Da un altro namespace, accedere al pod web:
+```
 k -n default run test --image=nginx -it --rm --restart=Never -- curl http://web.netpol-ns
 <!DOCTYPE html>
 <html>
@@ -1312,11 +1332,11 @@ Commercial support is available at
 </body>
 </html>
 pod "test" deleted
-
+```
 Creare la network policy:
-
+```
 17.netpol.yaml
----
+```
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -1327,9 +1347,11 @@ spec:
   policyTypes:
   - Ingress
   - Egress
-
+```
+```
 k apply -f 17.netpol.yaml
-
+```
+```
 k -n netpol-ns describe networkpolicies. deny-all 
 Name:         deny-all
 Namespace:    netpol-ns
@@ -1343,23 +1365,24 @@ Spec:
   Allowing egress traffic:
     <none> (Selected pods are isolated for egress connectivity)
   Policy Types: Ingress, Egress
-
+```
 Verifica:
+```
 k -n default run test --image=nginx -it --rm --restart=Never -- curl http://web.netpol-ns
 If you don't see a command prompt, try pressing enter.
 curl: (28) Failed to connect to web.netpol-ns port 80 after 134877 ms: Couldn't connect to server
 pod "test" deleted
 pod default/test terminated (Error)
-
+```
+```
 k -n netpol-ns exec -it pod/app -- bin/sh
 / # 
 / # curl http://web
 curl: (6) Could not resolve host: web
+```
 
-
-
-18 — Simulazione Node Failure (failure-ns)
-Obiettivo:
+### 18. Simulazione Node Failure (failure-ns)
+**Obiettivo:**
 
 Simulare il failure di un nodo.
 
@@ -1430,6 +1453,7 @@ Per visualizzare la CRD e l’oggetto:
 
 kubectl get crd myapps.example.com
 kubectl get myapp -n crd-ns	
+
 
 
 
