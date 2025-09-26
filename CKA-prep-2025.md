@@ -1,4 +1,4 @@
-1. HPA Configuration (hpa-ns)
+### 1. HPA Configuration (hpa-ns)
 Obiettivo:
 
 Creare un HPA per scalare automaticamente un deployment in base all'utilizzo della CPU.
@@ -6,10 +6,11 @@ Il deployment hpa-app deve avere un minimo di 1 e un massimo di 5 pod e lavorare
 percentuale di CPU al 50%.
 
 Preparazione:
+```
 k apply -f 01.hpa-ns/hpa.yaml
-
+```
 Risoluzione:
-
+```
 kubectl autoscale deployment hpa-app --cpu-percent=50 --min=1 --max=5
 
 kubectl apply -f hpa-ns/hpa.yaml
@@ -19,11 +20,12 @@ kubectl describe hpa nginx-hpa -n hpa-ns
 Increase the load
 Next, see how the autoscaler reacts to increased load. To do this, you'll start a different Pod to act as a client. 
 The container within the client Pod runs in an infinite loop, sending queries to the apache service.
-# Run this in a separate terminal
-# so that the load generation continues and you can carry on with the rest of the steps
-kubectl -n hpa-ns run -i --tty load-generator --rm --image=busybox:1.28 --restart=Never -- /bin/sh -c "while sleep 0.01; do wget -q -O- http://hpa-app; done"
+Run this in a separate terminal
+so that the load generation continues and you can carry on with the rest of the steps
 
-2. Installazione CRI-O (su nodo Linux Ubuntu 24.04)
+kubectl -n hpa-ns run -i --tty load-generator --rm --image=busybox:1.28 --restart=Never -- /bin/sh -c "while sleep 0.01; do wget -q -O- http://hpa-app; done"
+```
+### 2. Installazione CRI-O (su nodo Linux Ubuntu 24.04)
 Obiettivo:
 
 Installare CRI-O su un nodo.
@@ -32,48 +34,53 @@ Risoluzione:
 
 OS=xUbuntu_22.04
 VERSION=1.24
-
+```
 sudo apt update
 sudo apt install -y curl gnupg2 software-properties-common
-
-# Aggiungi repository
+```
+Aggiungi repository
+```
 echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
 echo "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/$CRIO_VERSION/$OS/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable:cri-o:$CRIO_VERSION.list
+```
 
-
-# Import GPG keys
+Import GPG keys
+```
 sudo mkdir -p /usr/share/keyrings
 
 curl -L https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:$CRIO_VERSION/$OS/Release.key | sudo apt-key add -
 curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/Release.key | sudo apt-key add -
+```
 
-# Install CRI-O and tools
+Install CRI-O and tools
+```
 sudo apt update
 sudo apt install -y cri-o cri-o-runc
-
-# Enable and start the service
+```
+Enable and start the service
+```
 sudo systemctl daemon-reload
 sudo systemctl enable crio --now
-
+```
 Verifica:
-
+```
 sudo apt info cri-o
 sudo systemctl status crio
-
-3. ArgoCD via Helm 3 (argocd-ns)
+```
+### 3. ArgoCD via Helm 3 (argocd-ns)
 Obiettivo:
 
 Installare ArgoCD v.7.8 senza CRD.
 
 Risoluzione: 
-
+```
 kubectl create ns argocd-ns
 helm repo add argo https://argoproj.github.io/argo-helm
 helm repo update
 helm install argocd argo/argo-cd --version 7.8.0 --namespace argocd-ns --skip-crds
-
+```
 Check:
-
+```
 k -n argocd-ns get all
 NAME                                                    READY   STATUS    RESTARTS   AGE
 pod/argocd-application-controller-0                     1/1     Running   0          108s
@@ -109,10 +116,10 @@ replicaset.apps/argocd-server-684949bff                       1         1       
 
 NAME                                             READY   AGE
 statefulset.apps/argocd-application-controller   1/1     108s
+```
 
 
-
-4. PriorityClass (priority-ns)
+### 4. PriorityClass (priority-ns)
 Obiettivo:
 
 Creare una PriorityClass high-priority e creare un pod che la utilizzi in un pod con immagine busybox.
@@ -137,7 +144,7 @@ Check:
 
 k -n priority-ns get pods -n priority-ns --sort-by=.spec.priority
 
-5. Ingress Setup (ingress-ns)
+### 5. Ingress Setup (ingress-ns)
 Obiettivo:
 
 Creazione di un ingress Nginx
@@ -193,7 +200,7 @@ PING worker2-k8s (192.168.122.176) 56(84) bytes of data.
 
 Verificare su quale porta NoePort risulta associata la porta 80 dell'ingress controller:
 
- k -n ingress-nginx get all
+k -n ingress-nginx get all
 NAME                                            READY   STATUS    RESTARTS      AGE
 pod/ingress-nginx-controller-58954d6d98-xnsgr   1/1     Running   2 (26m ago)   13h
 
@@ -1415,3 +1422,4 @@ Per visualizzare la CRD e l’oggetto:
 
 kubectl get crd myapps.example.com
 kubectl get myapp -n crd-ns	
+
