@@ -1334,7 +1334,7 @@ Commercial support is available at
 pod "test" deleted
 ```
 Creare la network policy:
-```
+
 17.netpol.yaml
 ```
 apiVersion: networking.k8s.io/v1
@@ -1386,31 +1386,33 @@ curl: (6) Could not resolve host: web
 
 Simulare il failure di un nodo.
 
-Risoluzione:
+**Risoluzione:**
 
 Applicare il seguetnte taint al nodo:
-
+```
 k taint node worker3-k8s key=value:NoSchedule
-
+```
 Fare il drain del nodo:
-
+```
 k drain worker3-k8s --ignore-daemonsets --delete-emptydir-data --force
-
+```
 Verifica:
+```
 k get no
 NAME          STATUS                     ROLES           AGE   VERSION
 master-k8s    Ready                      control-plane   18d   v1.32.1
 worker1-k8s   Ready                      <none>          18d   v1.32.1
 worker2-k8s   Ready                      <none>          18d   v1.32.1
 worker3-k8s   Ready,SchedulingDisabled   <none>          18d   v1.32.1
-
+```
 Per ripristinare il nodo occorre fare l'uncordon e rimuovere il taint:
-
+```
 k uncordon worker3-k8s
 k taint nodes worker3-k8s key=value:NoSchedule-
+```
 
-19 - PersistentVolume & PersistentVolumeClaim
-Obiettivo:
+### 19. PersistentVolume & PersistentVolumeClaim
+**Obiettivo:**
 
 Creare un PersistentVolume (PV) locale e un PersistentVolumeClaim (PVC) che lo usa. 
 Deployare un Pod che monta il PVC.
@@ -1453,6 +1455,7 @@ Per visualizzare la CRD e l’oggetto:
 
 kubectl get crd myapps.example.com
 kubectl get myapp -n crd-ns	
+
 
 
 
