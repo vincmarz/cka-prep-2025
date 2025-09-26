@@ -1,5 +1,5 @@
 ### 1. HPA Configuration (hpa-ns)
-Obiettivo:
+**Obiettivo:**
 
 Creare un HPA per scalare automaticamente un deployment in base all'utilizzo della CPU.
 Il deployment hpa-app deve avere un minimo di 1 e un massimo di 5 pod e lavorare con una
@@ -1422,4 +1422,5 @@ Per visualizzare la CRD e l’oggetto:
 
 kubectl get crd myapps.example.com
 kubectl get myapp -n crd-ns	
+
 
