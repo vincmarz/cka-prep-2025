@@ -1272,7 +1272,8 @@ daemonset.apps/busybox-agent   3         3         3       3            3       
 ### 17. NetworkPolicy (netpol-ns)
 **Obiettivo:** 
 
-Bloccare tutto il traffico di rete tra pod nel namespace. Nel namespace netpol-ns, ci sono il pod web che espone il service web e il pod app. Creare una NetworkPolicy deny-all che blocchi 
+Bloccare tutto il traffico di rete tra pod nel namespace. Nel namespace netpol-ns, ci sono il pod web che espone il service web e il pod app. 
+Creare una NetworkPolicy deny-all che blocchi 
 il traffico di rete tra pod nel namespace.
 
 **Risoluzione:**
@@ -1414,40 +1415,255 @@ k taint nodes worker3-k8s key=value:NoSchedule-
 ### 19. PersistentVolume & PersistentVolumeClaim
 **Obiettivo:**
 
-Creare un PersistentVolume (PV) locale e un PersistentVolumeClaim (PVC) che lo usa. 
-Deployare un Pod che monta il PVC.
+Creare un PersistentVolume (PV) local-pv da 1GB e un PersistentVolumeClaim (PVC) local-pvc che lo usa.
+Utilizzare la storageclass local-path (Nota: la storageclass è già installata). 
+Infine, deployare un Pod pv-pod con immagine busybox:1.28 che monta il PVC ed esegue il comando "sleep 3600".
 
-20 - StatefulSet 
-Obiettivo:
+**Risoluzione:**
+Creare il PV:
 
-Deploy di uno StatefulSet con 3 repliche, che monta un volume PVC per ogni replica.
+19.pv.yaml
+```
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: local-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: local-path
+  local:
+    path: /mnt
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values: 
+          - worker3-k8s
+```
+```
+k apply -f 19.pv.yaml
+```
 
+Creare il PVC:
+```
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: local-pvc
+  namespace: storage-ns
+spec:
+  resources:
+    requests: 
+      storage: 1Gi
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: local-path 
+```
 
-21 - Job batch
-Obiettivo:
+Creare il pod:
+```
+k -n storage-ns run pv-pod --image=busybox:1.28 --dry-run=client -o yaml -- sleep 3600 > 19.pod.yaml
+```
+Editare il file 19.pod.yaml:
 
-Creare un Job che esegue uno script bash che stampa "Hello from Job" e termina.
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pv-pod
+  name: pv-pod
+  namespace: storage-ns
+spec:
+  containers:
+  - args:
+    - sleep
+    - "3600"
+    image: busybox:1.28
+    name: pv-pod
+    resources: {}
+    volumeMounts:				# ADD
+    - name: local				# ADD	
+      mountPath: /mnt  				# ADD
+  volumes:					# ADD
+  - name: local					# ADD
+    persistentVolumeClaim: 			# ADD
+      claimName: local-pvc			# ADD	
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
 
-22 - Ingress con TLS
-Obiettivo:
+```
+Avviare il pod:
+```
+k apply -f 19.pod.yaml
+```
+
+Verifica:
+```
+k -n storage-ns describe po  pv-pod | grep mnt -A1
+      /mnt from local (rw)
+```
+
+### 20. StatefulSet 
+**Obiettivo:**
+
+Deploy di uno StatefulSet dell'immagine nginx:stable con 3 repliche, che monta un volume PVC www,per ogni replica, per il path /usr/share/nginx/html.
+Utilizzate la storageclass local-path (Nota: la storageclass è già installata). 
+
+**Risoluzione:**
+Creare un template dello statefulset a partire dal deployment:
+```
+k -n stateful-ns create deployment web --image=nginx:stable --port=80 --dry-run=client -o yaml > 20.statefulset.yaml
+```
+Editare il file 20.statefulset.yaml:
+```
+apiVersion: apps/v1
+kind: StatefulSet					# CHANGE
+metadata:
+  labels:
+    app: web
+  name: web
+  namespace: stateful-ns
+spec:
+  replicas: 3						# MODIFY
+  selector:
+    matchLabels:
+      app: web
+  strategy: {}						# DELETE
+  serviceName: "nginx"					# ADD	
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: web
+    spec:
+      containers:
+      - image: nginx:stable
+        name: nginx
+        ports:
+        - containerPort: 80
+          name: web					# ADD
+        volumeMounts:
+        - name: www
+          mountPath: /usr/share/nginx/html    
+        resources: {}
+  volumeClaimTemplates:
+  - metadata:
+      name: www
+    spec:
+      resources:
+      	requests:
+          storage: 1Gi
+      accessModes:
+      - ReadWriteOnce
+      storageClassName: local-path    			  				      
+status: {}
+
+```
+Installare lo YAML:
+```
+k apply -f 20.statefulset.yaml:   				       		  
+```
+
+Verifica:
+```
+k -n stateful-ns get all,pvc
+NAME        READY   STATUS    RESTARTS   AGE
+pod/web-0   1/1     Running   0          18m
+pod/web-1   1/1     Running   0          17m
+pod/web-2   1/1     Running   0          17m
+
+NAME                   READY   AGE
+statefulset.apps/web   3/3     18m
+
+NAME                              STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+persistentvolumeclaim/www-web-0   Bound    pvc-4807804b-d327-4da0-b642-7ba859adf320   1Gi        RWO            local-path     <unset>                 18m
+persistentvolumeclaim/www-web-1   Bound    pvc-89abd00b-434a-46a7-b2f4-cd8ae6579d82   1Gi        RWO            local-path     <unset>                 17m
+persistentvolumeclaim/www-web-2   Bound    pvc-26e5bd65-edb1-4b85-bdf9-8de8cf6a16cd   1Gi        RWO            local-path     <unset>                 17m
+```
+
+### 21. Job batch
+**Obiettivo:**
+
+Creare un Job che esegue uno script bash che stampa "Hello from Job" attende 2 secondi e poi termina. Il job deve avere 3 tentativi di esecuzione.
+
+**Risoluzione:**
+Creare il template del job:
+```
+k -n batch-ns create job hello --image=busybox:1.28 --dry-run=client -o yaml -- /bin/sh -c "echo 'Hello from Job'; sleep 2" > 21.job.yaml
+```
+Aggiungere backoffLimit pari a 3:
+```
+apiVersion: batch/v1
+kind: Job
+metadata:
+  creationTimestamp: null
+  name: hello
+  namespace: batch-ns
+spec:
+  template:
+    metadata:
+      creationTimestamp: null
+    spec:
+      containers:
+      - command:
+        - /bin/sh
+        - -c
+        - echo 'Hello from Job'; sleep 2
+        image: busybox:1.28
+        name: hello
+        resources: {}
+      restartPolicy: Never
+  backoffLimit: 3					# ADD    
+status: {}
+```
+
+Creare il job:
+```
+k apply -f 21.job.yaml
+```
+
+Verifica:
+```
+k -n batch-ns get all
+NAME              READY   STATUS      RESTARTS   AGE
+pod/hello-krgsf   0/1     Completed   0          6m24s
+
+NAME              STATUS     COMPLETIONS   DURATION   AGE
+job.batch/hello   Complete   1/1           7s         6m24s
+
+k -n batch-ns logs pod/hello-krgsf
+Hello from Job
+```
+
+### 22. Ingress con TLS
+**Obiettivo:**
 
 Configurare un Ingress con TLS (self-signed) che instrada verso un service Nginx.
 
-23 - Deploy con Helm
-Obiettivo:
+### 23. Deploy con Helm
+**Obiettivo:**
 
 Installare un chart Helm (es. nginx) in un namespace dedicato, con valori personalizzati (replica=2).
 
-24 - Multi-container Pod
-Obiettivo:
+### 24. Multi-container Pod
+**Obiettivo:**
+
 Creare un Pod con 2 container:
 
     container A: nginx che serve pagina web
 
     container B: busybox che scrive ogni 5s in un volume condiviso /data
 	
-25 - Custom Resource Definition (CRD) + Custom Resource
-Obiettivo:
+### 25. Custom Resource Definition (CRD) + Custom Resource
+**Obiettivo:**
 
 Creare una CRD chiamata MyApp e un oggetto custom di tipo MyApp.
 

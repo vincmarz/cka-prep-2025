@@ -1,57 +1,57 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: storage-ns
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: local-pv
-spec:
-  capacity:
-    storage: 1Gi
-  accessModes:
-  - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: local-storage
-  local:
-    path: /mnt/data
-  nodeAffinity:
-    required:
-      nodeSelectorTerms:
-      - matchExpressions:
-        - key: kubernetes.io/hostname
-          operator: In
-          values:
-          - node-name-target
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: local-pvc
-  namespace: storage-ns
-spec:
-  accessModes:
-  - ReadWriteOnce
-  storageClassName: local-storage
-  resources:
-    requests:
-      storage: 1Gi
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: pv-pod
-  namespace: storage-ns
-spec:
-  containers:
-  - name: busybox
-    image: busybox
-    command: ["sleep", "3600"]
-    volumeMounts:
-    - mountPath: /data
-      name: storage
-  volumes:
-  - name: storage
-    persistentVolumeClaim:
-      claimName: local-pvc
+#apiVersion: v1
+#kind: Namespace
+#metadata:
+#  name: storage-ns
+#---
+#apiVersion: v1
+#kind: PersistentVolume
+#metadata:
+#  name: local-pv
+#spec:
+#  capacity:
+#    storage: 1Gi
+#  accessModes:
+#  - ReadWriteOnce
+#  persistentVolumeReclaimPolicy: Retain
+#  storageClassName: local-storage
+#  local:
+#    path: /mnt/data
+#  nodeAffinity:
+#    required:
+#      nodeSelectorTerms:
+#      - matchExpressions:
+#        - key: kubernetes.io/hostname
+#          operator: In
+#          values:
+#          - node-name-target
+#---
+#apiVersion: v1
+#kind: PersistentVolumeClaim
+#metadata:
+#  name: local-pvc
+#  namespace: storage-ns
+#spec:
+#  accessModes:
+#  - ReadWriteOnce
+#  storageClassName: local-storage
+#  resources:
+#    requests:
+#      storage: 1Gi
+#---
+#apiVersion: v1
+#kind: Pod
+#metadata:
+#  name: pv-pod
+#  namespace: storage-ns
+#spec:
+#  containers:
+#  - name: busybox
+#    image: busybox
+#    command: ["sleep", "3600"]
+#    volumeMounts:
+#    - mountPath: /data
+#      name: storage
+#  volumes:
+#  - name: storage
+#    persistentVolumeClaim:
+#      claimName: local-pvc
