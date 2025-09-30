@@ -1647,6 +1647,11 @@ Hello from Job
 **Obiettivo:**
 
 Configurare un Ingress con TLS (self-signed) che instrada verso un service Nginx.
+Nel namespace ingress-ns è presente il pod web esposto con un ingress web-ingress. Creare un certificato self-signed 
+con il tool cfssl e configurate l'ingress TLS.
+
+**Risoluzione:**
+
 
 ### 23. Deploy con Helm
 **Obiettivo:**

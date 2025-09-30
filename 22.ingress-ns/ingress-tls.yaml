@@ -46,10 +46,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - example.local
+    - web.local
     secretName: tls-secret
   rules:
-  - host: example.local
+  - host: web.local
     http:
       paths:
       - path: /
