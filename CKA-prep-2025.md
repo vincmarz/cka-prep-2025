@@ -1648,10 +1648,254 @@ Hello from Job
 
 Configurare un Ingress con TLS (self-signed) che instrada verso un service Nginx.
 Nel namespace ingress-ns è presente il pod web esposto con un ingress web-ingress. Creare un certificato self-signed 
-con il tool cfssl e configurate l'ingress TLS.
+con il tool cfssl e configurate l'ingress TLS con l'host web.local.
 
 **Risoluzione:**
 
+Verifica del namespace:
+```
+k -n ingress-ns get all,ing
+NAME                       READY   STATUS    RESTARTS       AGE
+pod/web-78df96f968-dtpn9   1/1     Running   16 (28m ago)   22d
+
+NAME          TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+service/web   ClusterIP   10.104.142.8   <none>        80/TCP    22d
+
+NAME                  READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/web   1/1     1            1           22d
+
+NAME                             DESIRED   CURRENT   READY   AGE
+replicaset.apps/web-78df96f968   1         1         1       22d
+
+NAME                                    CLASS   HOSTS       ADDRESS           PORTS   AGE
+ingress.networking.k8s.io/web-ingress   nginx   web.local   192.168.122.222   80      22d
+```
+Creare una directory per gli artifacts e inizializzare cfssl:
+```
+mkdir cert
+cd cert 
+
+cfssl print-defaults > config.json
+cat config.json
+{
+    "signing": {
+        "default": {
+            "expiry": "168h"
+        },
+        "profiles": {
+            "www": {
+                "expiry": "8760h",
+                "usages": [
+                    "signing",
+                    "key encipherment",
+                    "server auth"
+                ]
+            },
+            "client": {
+                "expiry": "8760h",
+                "usages": [
+                    "signing",
+                    "key encipherment",
+                    "client auth"
+                ]
+            }
+        }
+    }
+}
+
+cfssl print-defaults csr > csr.json
+
+
+
+
+```
+Modificare il file csr.json:
+```
+{
+    "CN": "web.local",					# CHANGE
+    "hosts": [
+        "web.local",					# CHANGE					
+        "www.web.local"					# CHANGE
+    ],
+    "key": {
+        "algo": "ecdsa",
+        "size": 256
+    },
+    "names": [
+        {
+            "C": "US",
+            "ST": "CA",
+            "L": "San Francisco"
+        }
+    ]
+} 
+```
+Generare la CA:
+
+```
+cfssl gencert -initca csr.json | cfssljson -bare ca
+2025/09/30 17:19:28 [INFO] generating a new CA key and certificate from CSR
+2025/09/30 17:19:28 [INFO] generate received request
+2025/09/30 17:19:28 [INFO] received CSR
+2025/09/30 17:19:28 [INFO] generating key: ecdsa-256
+2025/09/30 17:19:28 [INFO] encoded CSR
+2025/09/30 17:19:28 [INFO] signed certificate with serial number 619999696513047655266847844053058379037933336331
+```
+
+Verifica:
+
+```
+prep01/cert$ ls
+ca.csr  ca-key.pem  ca.pem  config.json  csr.json
+```
+
+Creare la richiesta per il certificato Ingress ingress-csr.json:
+
+```
+{
+  "CN": "web.local",
+  "hosts": [
+    "web.local",
+    "www.web.local",
+    ""
+  ],
+  "key": {
+    "algo": "ecdsa",
+    "size": 256
+  },
+  "names": [{
+    "C": "US",
+    "ST": "CA",
+    "L": "San Francisco"
+  }]
+}
+```
+
+Creare il certificato:
+
+```
+cfssl gencert \
+   -ca=ca.pem \ 
+   -ca-key=ca-key.pem \
+   -config=config.json \
+   -profile=www ingress-csr.json | cfssljson -bare ingress 
+```
+
+Verifica:
+
+```
+prep01/cert$ ls
+ca.csr  ca-key.pem  ca.pem  config.json  ingress.csr  ingress-csr.json  ingress-key.pem  ingress.pem
+```
+
+Verifica del certificato:
+
+```
+openssl x509 -in ingress.pem -noout -text
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            1c:05:87:36:b5:53:d7:83:2c:26:f0:8d:48:50:6c:47:0f:79:a0:94
+        Signature Algorithm: ecdsa-with-SHA256
+        Issuer: C = US, ST = CA, L = San Francisco, CN = web.local
+        Validity
+            Not Before: Sep 30 15:39:00 2025 GMT
+            Not After : Sep 30 15:39:00 2026 GMT
+        Subject: C = US, ST = CA, L = San Francisco, CN = web.local
+        Subject Public Key Info:
+            Public Key Algorithm: id-ecPublicKey
+                Public-Key: (256 bit)
+                pub:
+                    04:31:1a:86:08:9b:45:98:e7:9c:89:7f:8a:8d:21:
+                    5e:0f:da:50:2c:c2:52:84:5d:5f:29:95:43:aa:d3:
+                    ca:6a:69:76:ac:d3:bd:0f:07:de:d2:65:07:16:0c:
+                    9f:37:6b:0f:d6:34:67:87:7e:81:c7:78:b5:7d:32:
+                    aa:a7:51:0b:be
+                ASN1 OID: prime256v1
+                NIST CURVE: P-256
+        X509v3 extensions:
+            X509v3 Key Usage: critical
+                Digital Signature, Key Encipherment
+            X509v3 Extended Key Usage:
+                TLS Web Server Authentication
+            X509v3 Basic Constraints: critical
+                CA:FALSE
+            X509v3 Subject Key Identifier:
+                58:07:FD:EE:0E:76:3D:8E:3B:E6:B9:8A:20:42:17:55:95:1C:07:BE
+            X509v3 Subject Alternative Name:
+                DNS:web.local, DNS:www.web.local
+    Signature Algorithm: ecdsa-with-SHA256
+    Signature Value:
+        30:46:02:21:00:be:14:03:19:55:b3:30:14:ab:23:dc:e3:05:
+        f9:be:db:e0:a5:89:cd:de:82:9b:73:f6:cf:6a:7f:69:b1:69:
+        71:02:21:00:ea:f7:55:8c:e6:ac:98:93:d8:5c:19:c0:7e:45:
+        7f:ac:a5:ea:e1:72:5e:61:0f:86:12:58:28:ee:2b:4b:fb:cf
+```
+
+Creare il secret TLS:
+```
+k -n ingress-ns create secret tls ingress-web --cert=ingress.pem --key=ingress-key.pem
+```
+Modificare l'ingress web-ingress aggiungendo il secret TLS:
+```
+k -n ingress-ns edit ingress web-ingress
+[...]
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: web.local
+    http:
+      paths:
+      - backend:
+          service:
+            name: web
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
+  tls:									# ADD
+  - hosts:								# ADD
+    - web.local							# ADD
+    secretName: ingress-web				# ADD	
+[...] 
+
+```
+Verifica del'ingress in ascolto sulla 443: 
+```
+k -n ingress-ns get ingress web-ingress
+NAME          CLASS   HOSTS       ADDRESS           PORTS     AGE
+web-ingress   nginx   web.local   192.168.122.222   80, 443   22d
+```
+
+Check con curl in https:
+
+```
+ curl https://web.local:31431 -k
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+html { color-scheme: light dark; }
+body { width: 35em; margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+```
 
 ### 23. Deploy con Helm
 **Obiettivo:**
