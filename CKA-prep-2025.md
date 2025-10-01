@@ -1900,7 +1900,64 @@ Commercial support is available at
 ### 23. Deploy con Helm
 **Obiettivo:**
 
-Installare un chart Helm (es. nginx) in un namespace dedicato, con valori personalizzati (replica=2).
+Installare la versione 2.1.1 di nginx/wiremind  con Helm nel namespace helm-ns, impostando replica a 2.
+
+**Risoluzione:**
+
+Installare il repo:
+
+```
+helm repo add wiremind https://wiremind.github.io/wiremind-helm-charts
+```
+
+Aggiornare il repo:
+```
+helm repo update 
+```
+
+Verificare le versioni del chart:
+
+```
+helm search repo nginx
+NAME                       	CHART VERSION	APP VERSION	DESCRIPTION                                       
+wiremind/nginx             	2.1.1        	           	An NGINX HTTP server                              
+
+```
+
+Installare Nginx:
+```
+helm -n helm-ns install my-nginx wiremind/nginx --set replicaCount=2 --version 2.1.1
+```
+
+Verifica:
+```
+helm -n helm-ns status my-nginx 
+NAME: my-nginx
+LAST DEPLOYED: Wed Oct  1 17:34:39 2025
+NAMESPACE: helm-ns
+STATUS: deployed
+REVISION: 1
+
+```
+
+Verifica:
+```
+k -n helm-ns get all
+NAME                                  READY   STATUS    RESTARTS   AGE
+pod/my-nginx-nginx-5454dc9598-7wqs2   1/1     Running   0          52s
+pod/my-nginx-nginx-5454dc9598-qp2pn   1/1     Running   0          52s
+
+NAME                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+service/my-nginx-nginx   ClusterIP   10.102.77.148   <none>        80/TCP    53s
+
+NAME                             READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/my-nginx-nginx   2/2     2            2           52s
+
+NAME                                        DESIRED   CURRENT   READY   AGE
+replicaset.apps/my-nginx-nginx-5454dc9598   2         2         2       52s
+
+```
+
 
 ### 24. Multi-container Pod
 **Obiettivo:**

@@ -6,8 +6,8 @@ kubectl create ns helm-ns
 
     Installare nginx con Helm in quel namespace, impostando replica=2:
 
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm install my-nginx bitnami/nginx --namespace helm-ns --set replicaCount=2
+helm repo add wiremind https://wiremind.github.io/wiremind-helm-charts
+helm -n helm-ns install my-nginx wiremind/nginx --set replicaCount=2 --version 2.1.1
 
     Verificare:
 
