@@ -7,25 +7,25 @@
 Creare un HPA per scalare automaticamente un deployment in base all'utilizzo della CPU.
 Il deployment hpa-app deve avere un minimo di 1 e un massimo di 5 pod e lavorare con l'utilizzo di CPU al 50%.
 
-**Preparazione:**
-```
-k apply -f 01.hpa-ns/hpa.yaml
-```
 **Risoluzione:**
+
+Creare un horizontalpodautoscalers hpa-app:
 ```
 kubectl autoscale deployment hpa-app --cpu-percent=50 --min=1 --max=5
+```
 
-kubectl apply -f hpa-ns/hpa.yaml
+Verifica:
+```
 kubectl get hpa -n hpa-ns
 kubectl describe hpa nginx-hpa -n hpa-ns
+```
+Aumentare il carico per osservare come reagisce l'autoscaler all'aumento del carico. 
+Per fare ciò, avviare un Pod diverso che funga da client.
+Il container all'interno del Pod client viene eseguito in un ciclo infinito, inviando query al servizio Apache.
+Eseguirlo in un terminale separato in modo che la generazione del carico continui.
 
-Increase the load
-Next, see how the autoscaler reacts to increased load. To do this, you'll start a different Pod to act as a client. 
-The container within the client Pod runs in an infinite loop, sending queries to the apache service.
-Run this in a separate terminal
-so that the load generation continues and you can carry on with the rest of the steps
-
-kubectl -n hpa-ns run -i --tty load-generator --rm --image=busybox:1.28 --restart=Never -- /bin/sh -c "while sleep 0.01; do wget -q -O- http://hpa-app; done"
+```
+kubectl -n hpa-ns run -it load-generator --rm --image=busybox:1.28 --restart=Never -- /bin/sh -c "while sleep 0.01; do wget -q -O- http://hpa-app; done"
 ```
 ### 2. Installazione CRI-O (su nodo Linux Ubuntu 24.04)
 **Obiettivo:**
@@ -34,19 +34,19 @@ Installare CRI-O su un nodo.
 
 **Risoluzione:** 
 
-OS=xUbuntu_22.04
-VERSION=1.24
+Dopo il login, eseguire sul nodo:
+
 ```
 sudo apt update
 sudo apt install -y curl gnupg2 software-properties-common
 ```
-Aggiungi repository
+Aggiungi i repository:
 ```
 echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
 echo "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/$CRIO_VERSION/$OS/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable:cri-o:$CRIO_VERSION.list
 ```
 
-Import GPG keys
+Import delle GPG keys:
 ```
 sudo mkdir -p /usr/share/keyrings
 
@@ -54,12 +54,12 @@ curl -L https://download.opensuse.org/repositories/devel:kubic:libcontainers:sta
 curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/Release.key | sudo apt-key add -
 ```
 
-Install CRI-O and tools
+Installazione di CRI-O:
 ```
 sudo apt update
 sudo apt install -y cri-o cri-o-runc
 ```
-Enable and start the service
+Abilitare e avviare il service:
 ```
 sudo systemctl daemon-reload
 sudo systemctl enable crio --now
@@ -69,6 +69,7 @@ Verifica:
 sudo apt info cri-o
 sudo systemctl status crio
 ```
+
 ### 3. ArgoCD via Helm 3 (argocd-ns)
 **Obiettivo:**
 
@@ -123,18 +124,18 @@ statefulset.apps/argocd-application-controller   1/1     108s
 ### 4. PriorityClass (priority-ns)
 **Obiettivo:**
 
-Creare una PriorityClass high-priority e creare un pod che la utilizzi in un pod con immagine busybox.
+Creare una PriorityClass high-priority e utilizzarla in un pod priority-pod con immagine busybox.
 
 **Risoluzione:**
 
-Creare la priorityclass con il nome high-priority, valore 100000 e descrizione "High priority pods":
+Creare la priorityclass con il nome high-priority, valore 100000, descrizione "High priority pods" ma che non sia la default priority.
 
 ```
 k create priorityclass high-priority --value=100000 --global-default=false --description="High priority pods"
 
-k -n priority-ns run priority-pod --image=busybox --dry-run=client -o yaml  -- sh -c 'sleep 3600'  > pod-pc.yaml
+k -n priority-ns run priority-pod --image=busybox --dry-run=client -o yaml  -- sh -c 'sleep 3600'  > 4.pod.yaml
 ```
-Editare pod-pc.yaml e aggiungere dopo .spec:
+Editare 4.pod.yaml e aggiungere dopo .spec:
 ```
 priorityClassName: high-priority
 ```
@@ -144,8 +145,14 @@ k apply -f pod-pc.yaml
 ```
 Check:
 ```
-k -n priority-ns get pods -n priority-ns --sort-by=.spec.priority
+k -n priority-ns get po  --sort-by=.spec.priority 
+NAME       READY   STATUS    RESTARTS   AGE
+sleeper    1/1     Running   0          19m3s
+web        1/1     Running   0          19m3s
+priority   1/1     Running   0          16m
 ```
+L'ordine ascendente mostra il pod priority in fondo alla lista.
+
 ### 5. Ingress Setup (ingress-ns)
 **Obiettivo:**
 

@@ -38,6 +38,7 @@ echo "✅ Creazione dei namespace completata."
 
 echo "Preparazione lab"
 kubectl apply -f 01.hpa-ns/hpa.yaml
+kubectl apply -f 04.priority-ns/priority.yaml
 kubectl apply -f 05.ingress-ns/ingress.yaml
 kubectl apply -f 06.quota-ns/quota.yaml
 kubectl apply -f 07.pvc-ns/pvc.yaml

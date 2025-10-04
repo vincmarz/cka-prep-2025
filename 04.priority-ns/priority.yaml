@@ -1,19 +1,57 @@
-apiVersion: scheduling.k8s.io/v1
-kind: PriorityClass
-metadata:
-  name: high-priority
-value: 100000
-globalDefault: false
-description: "High priority pods"
+#apiVersion: scheduling.k8s.io/v1
+#kind: PriorityClass
+#metadata:
+#  name: high-priority
+#value: 100000
+#globalDefault: false
+#description: "High priority pods"
+#---
+#apiVersion: v1
+#kind: Pod
+#metadata:
+#  name: priority-pod
+#  namespace: priority-ns
+#spec:
+#  priorityClassName: high-priority
+#  containers:
+#  - name: sleep
+#    image: busybox
+#    command: ["sleep", "3600"]
 ---
 apiVersion: v1
 kind: Pod
 metadata:
-  name: priority-pod
+  creationTimestamp: null
+  labels:
+    run: web
+  name: web
   namespace: priority-ns
 spec:
-  priorityClassName: high-priority
   containers:
-  - name: sleep
+  - image: nginx
+    name: web
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: sleeper
+  name: sleeper
+  namespace: priority-ns
+spec:
+  containers:
+  - args:
+    - sh
+    - -c
+    - sleep 36000
     image: busybox
-    command: ["sleep", "3600"]
+    name: sleeper
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
