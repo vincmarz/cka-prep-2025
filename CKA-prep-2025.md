@@ -624,9 +624,15 @@ spec:
   secretName: my-cert-tls
   issuerRef:
     name: selfsigned-cluster-issuer
+```
 
+Creare il certificato:
+
+```
 kubectl apply -f 10.certificate.yaml
-
+```
+Verifica:
+```
 k -n cert-ns describe certificate my-cert
 Name:         my-cert
 Namespace:    cert-ns
@@ -1962,12 +1968,79 @@ replicaset.apps/my-nginx-nginx-5454dc9598   2         2         2       52s
 ### 24. Multi-container Pod
 **Obiettivo:**
 
-Creare un Pod con 2 container:
+Creare un Pod multi-container con 2 container: il container nginx che serve pagina web e il container writer con immagine busybox 
+che scrive ogni 5s in un volume condiviso /data
 
-    container A: nginx che serve pagina web
+**Risoluzione:**
 
-    container B: busybox che scrive ogni 5s in un volume condiviso /data
-	
+Creare il template del pod:
+```
+k -n multi-ns run multi-container --image=nginx --dry-run=client -o yaml > 24.pod.yaml
+
+```	
+Editare lo YAML:
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: multi-container
+  name: multi-container
+  namespace: multi-ns
+spec:
+  containers:
+  - image: nginx
+    name: nginx										# CHANGE
+    volumeMounts:									# ADD	
+    - name: shared									# ADD
+      mountPath: /usr/share/nginx/html							# ADD	
+  - image: busybox									# ADD
+    name: writer									# ADD
+    command: ["sh", "-c", "while true; do date >> /data/index.html; sleep 5; done" ]	# ADD
+    volumeMounts:									# ADD
+    - name: shared									# ADD
+      mountPath: /data									# ADD
+    resources: {}
+  volumes:										# ADD
+  - name: shared									# ADD
+    emptyDir: {}									# ADD
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+```
+Creare il pod:
+
+```
+k apply -f 24.pod.yaml
+```
+
+Verifica:
+```
+k -n multi-ns exec -it multi-container -c nginx  -- cat /usr/share/nginx/html/index.html
+Sat Oct  4 07:30:41 UTC 2025
+Sat Oct  4 07:30:46 UTC 2025
+Sat Oct  4 07:30:51 UTC 2025
+Sat Oct  4 07:30:56 UTC 2025
+Sat Oct  4 07:31:01 UTC 2025
+Sat Oct  4 07:31:06 UTC 2025
+Sat Oct  4 07:31:11 UTC 2025
+Sat Oct  4 07:31:17 UTC 2025
+[...]
+
+k -n multi-ns exec -it multi-container -c writer  -- cat /data/index.html
+Sat Oct  4 07:30:41 UTC 2025
+Sat Oct  4 07:30:46 UTC 2025
+Sat Oct  4 07:30:51 UTC 2025
+Sat Oct  4 07:30:56 UTC 2025
+Sat Oct  4 07:31:01 UTC 2025
+Sat Oct  4 07:31:06 UTC 2025
+Sat Oct  4 07:31:11 UTC 2025
+Sat Oct  4 07:31:17 UTC 2025
+[...]
+```
+
 ### 25. Custom Resource Definition (CRD) + Custom Resource
 **Obiettivo:**
 

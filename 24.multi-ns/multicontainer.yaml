@@ -6,7 +6,7 @@ metadata:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: multi-container-pod
+  name: multi-container
   namespace: multi-ns
 spec:
   volumes:
