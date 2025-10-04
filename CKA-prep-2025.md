@@ -74,7 +74,7 @@ sudo systemctl status crio
 ### 3. ArgoCD via Helm 3 (argocd-ns)
 **Obiettivo:**
 
-Installare ArgoCD v.7.8 senza CRD.
+Installare ArgoCD v.7.8.0 senza CRD.
 
 **Risoluzione:** 
 ```
