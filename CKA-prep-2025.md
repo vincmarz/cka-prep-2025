@@ -285,7 +285,7 @@ k apply -f 06.quota-ns/quota.yaml
 ```
 **Risoluzione:**
 ```
-kubectl -n quota-ns create quota wordpress-quota --hard=requests.cpu=1,requests.memory=512Mi,limits.cpu=1,limits.memory=1Gi
+kubectl -n quota-ns create quota wordpress-quota --hard=requests.cpu=500m,requests.memory=512Mi,limits.cpu=1,limits.memory=1Gi
 
 kubectl describe quota wordpress-quota -n quota-ns
 Name:            wordpress-quota
@@ -306,7 +306,7 @@ wordpress-5784f757f5-h8ghm   1/1     Running   0          8m28s
 ### 7. PVC + Pod (pvc-ns)
 **Obiettivo:**
 
-Creazione di un PVC wp-pvc e associazione ad un pod Nginx. Creare anche un PV corrispondente (di tipo hostPath).
+Creazione di un PVC wp-pvc da 1GiB e associazione ad un pod Nginx. Creare anche un PV corrispondente (di tipo hostPath).
 
 **Risoluzione:**
 
@@ -318,7 +318,7 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: wp-pv 
-  namespace: pv-ns
+  namespace: pvc-ns
 spec:
   capacity:
 	storage: 1Gi
