@@ -426,9 +426,10 @@ utilizzando un gateway sulla porta 80 e creare un HTTPGateway.
 
 **Risoluzione:**
 Per il traffico HTTP ruotato da un service utilizzando un Gateway a una HTTPRoute avremo:
-
+```
 client--->(HTTP Request)--->Gateway--->HTTPRoute--->(Routing rule)--->Service|--->POD
-                                                                             |--->POD   
+									     |--->POD
+```
 Verificare quali sono le CRD gateway installate:
 ```
 k get crd | grep -i gateway
