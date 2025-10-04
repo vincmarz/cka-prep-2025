@@ -25,7 +25,8 @@ namespaces=(
   ingress-ns
   helm-ns 
   multi-ns 
-  cdr-ns  
+  cdr-ns
+  debug-ns  
 )
 
 for ns in "${namespaces[@]}"; do
