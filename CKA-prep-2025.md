@@ -1,3 +1,6 @@
+#### CKA Prep 2025 
+## Nota: per il setup, eseguire cka-setup.sh
+
 ### 1. HPA Configuration (hpa-ns)
 **Obiettivo:**
 
@@ -157,6 +160,8 @@ k apply -f 05.ingress-ns/ingress.yaml
 ```
 **Risoluzione:**
 
+Creare il file YAML dell'Ingress:
+
 05.ingress.yaml
 ```
 apiVersion: networking.k8s.io/v1
@@ -179,15 +184,19 @@ spec:
             name: web
             port:
               number: 80
-
+```
+Creare l'Ingress:
+```
 k apply -f 05.ingress.yaml
-
+```
+Verifica:
+```
 kubectl get ingress -n ingress-ns
 ```
-Nota:
+
 Aggiungere web.local a /etc/hosts
 
-Test (valido con plugin CNI Calico) :
+Verifica (valida con plugin CNI Calico) :
 ```
 k -n ingress-ns get po -owide
 NAME                   READY   STATUS    RESTARTS   AGE    IP           NODE          NOMINATED NODE   READINESS GATES
@@ -199,7 +208,7 @@ PING worker2-k8s (192.168.122.176) 56(84) bytes of data.
 /etc/hosts
 192.168.122.176 worker2-k8s web.local
 ```
-Verificare su quale porta NoePort risulta associata la porta 80 dell'ingress controller:
+Verificare su quale porta NodePort risulta associata la porta 80 dell'ingress controller:
 ```
 k -n ingress-nginx get all
 NAME                                            READY   STATUS    RESTARTS      AGE
@@ -214,7 +223,9 @@ deployment.apps/ingress-nginx-controller   1/1     1            1           13h
 
 NAME                                                  DESIRED   CURRENT   READY   AGE
 replicaset.apps/ingress-nginx-controller-58954d6d98   1         1         1       13h
-
+```
+Verifica con curl:
+```
 curl http://web.local:30861
 <!DOCTYPE html>
 <html>
@@ -273,23 +284,7 @@ wordpress-5784f757f5-h8ghm   1/1     Running   0          8m28s
 ### 7. PVC + Pod (pvc-ns)
 **Obiettivo:**
 
-Creazione di un PVC wp-pvc e associazione ad un pod Nginx. Creare anche un PV corrispondente.
-
-**Prerequisito:**
-Installare una storage class di tipo locale, ad esempio:
-```
-Name:            local-path
-IsDefaultClass:  No
-Annotations:     kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"storage.k8s.io/v1","kind":"StorageClass","metadata":{"annotations":{},"name":"local-path"},"provisioner":"rancher.io/local-path","reclaimPolicy":"Delete","volumeBindingMode":"WaitForFirstConsumer"}
-
-Provisioner:           rancher.io/local-path
-Parameters:            <none>
-AllowVolumeExpansion:  <unset>
-MountOptions:          <none>
-ReclaimPolicy:         Delete
-VolumeBindingMode:     WaitForFirstConsumer
-Events:                <none>
-```
+Creazione di un PVC wp-pvc e associazione ad un pod Nginx. Creare anche un PV corrispondente (di tipo hostPath).
 
 **Risoluzione:**
 
@@ -396,7 +391,9 @@ spec:
   dnsPolicy: ClusterFirst
   restartPolicy: Always
 status: {}
-
+```
+Creare il pod:
+```
 kubectl apply -f 08.pod.yaml
 ```
 Check:
@@ -419,7 +416,7 @@ main running
 [...]
 ```
 
-### 9. HTTP Gateway 
+### 9. HTTP Gateway (gateway-ns)
 **Obiettivo:**
 
 Creazione di un HTTPGateway e associazione ad un pod. Nel namespace gateway-ns è presente un deployment nginx-welcome, un service e una configmap. Esporre l'applicazione
@@ -471,7 +468,9 @@ spec:
     allowedRoutes:
       namespaces:
       	from: Same	
-
+```
+Creare il Gateway:
+```
 k apply -f 09.gateway.yaml
 ```
 Creare un HTTPRoute con una route su / per l'applicazione http-echo:
@@ -493,9 +492,11 @@ spec:
         type: PathPrefix
         value: /
     backendRefs:
-    - name: http-echo
-      port: 8080
-
+    - name: nginx-welcome
+      port: 80
+```
+Creare l'HTTPRoute:
+```
 k apply -f 09.httproute.yaml
 ```
 Check:
