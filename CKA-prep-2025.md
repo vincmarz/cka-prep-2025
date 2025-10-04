@@ -1034,7 +1034,7 @@ k taint node worker1-k8s worker2-k8s worker3-k8s key1=value1:NoSchedule-
 k delete -f 13.pod.yaml
 ```
 
-## 14. ConfigMap & Secret
+### 14. ConfigMap & Secret (config-ns)
 **Obiettivo:** 
 
 Creare un pod che monta una ConfigMap come file e legge Secret come variabile d’ambiente. 
@@ -1420,7 +1420,7 @@ k uncordon worker3-k8s
 k taint nodes worker3-k8s key=value:NoSchedule-
 ```
 
-### 19. PersistentVolume & PersistentVolumeClaim
+### 19. PersistentVolume & PersistentVolumeClaim (storage-ns)
 **Obiettivo:**
 
 Creare un PersistentVolume (PV) local-pv da 1GB e un PersistentVolumeClaim (PVC) local-pvc che lo usa.
@@ -1519,7 +1519,7 @@ k -n storage-ns describe po  pv-pod | grep mnt -A1
       /mnt from local (rw)
 ```
 
-### 20. StatefulSet 
+### 20. StatefulSet (stateful-ns)
 **Obiettivo:**
 
 Deploy di uno StatefulSet dell'immagine nginx:stable con 3 repliche, che monta un volume PVC www,per ogni replica, per il path /usr/share/nginx/html.
@@ -1597,7 +1597,7 @@ persistentvolumeclaim/www-web-1   Bound    pvc-89abd00b-434a-46a7-b2f4-cd8ae6579
 persistentvolumeclaim/www-web-2   Bound    pvc-26e5bd65-edb1-4b85-bdf9-8de8cf6a16cd   1Gi        RWO            local-path     <unset>                 17m
 ```
 
-### 21. Job batch
+### 21. Job batch (batch-ns)
 **Obiettivo:**
 
 Creare un Job che esegue uno script bash che stampa "Hello from Job" attende 2 secondi e poi termina. Il job deve avere 3 tentativi di esecuzione.
@@ -1651,7 +1651,7 @@ k -n batch-ns logs pod/hello-krgsf
 Hello from Job
 ```
 
-### 22. Ingress con TLS
+### 22. Ingress con TLS (ingress-ns)
 **Obiettivo:**
 
 Configurare un Ingress con TLS (self-signed) che instrada verso un service Nginx.
@@ -1905,7 +1905,7 @@ Commercial support is available at
 </html>
 ```
 
-### 23. Deploy con Helm
+### 23. Deploy con Helm (helm-ns)
 **Obiettivo:**
 
 Installare la versione 2.1.1 di nginx/wiremind  con Helm nel namespace helm-ns, impostando replica a 2.
@@ -1967,7 +1967,7 @@ replicaset.apps/my-nginx-nginx-5454dc9598   2         2         2       52s
 ```
 
 
-### 24. Multi-container Pod
+### 24. Multi-container Pod (multi-ns)
 **Obiettivo:**
 
 Creare un Pod multi-container con 2 container: il container nginx che serve pagina web e il container writer con immagine busybox 
@@ -2043,7 +2043,7 @@ Sat Oct  4 07:31:17 UTC 2025
 [...]
 ```
 
-### 25. Custom Resource Definition (CRD) + Custom Resource
+### 25. Custom Resource Definition (CRD) & Custom Resource (cdr-ns) 
 **Obiettivo:**
 
 Creare una CRD chiamata MyApp e un oggetto custom di tipo MyApp.
