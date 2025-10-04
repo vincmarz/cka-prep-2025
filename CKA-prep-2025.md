@@ -139,11 +139,12 @@ statefulset.apps/argocd-application-controller   1/1     108s
 ### 4. PriorityClass (priority-ns)
 **Obiettivo:**
 
-Creare una PriorityClass high-priority e utilizzarla in un pod priority-pod con immagine busybox.
+Creare la priorityclass con il nome high-priority, valore 100000, descrizione "High priority pods" ma che non sia la default priority.
+Utilizzare la priorityclass in un pod priority-pod con immagine busybox.
 
 **Risoluzione:**
 
-Creare la priorityclass con il nome high-priority, valore 100000, descrizione "High priority pods" ma che non sia la default priority.
+Creare la priorityclass:
 
 ```
 k create priorityclass high-priority --value=100000 --global-default=false --description="High priority pods"
