@@ -2112,7 +2112,7 @@ kubectl get crd myapps.example.com
 kubectl get myapp -n crd-ns	
 ```
 
-[click on this link](#cka-prep-2025)
+[vai a inizio pagina](#cka-prep-2025)
 
 
 
