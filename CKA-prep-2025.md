@@ -2048,12 +2048,70 @@ Sat Oct  4 07:31:17 UTC 2025
 
 Creare una CRD chiamata MyApp e un oggetto custom di tipo MyApp.
 
-Per visualizzare la CRD e l’oggetto:
+**Risoluzione:**
 
+Creare lo YAML della CRD MyApp:
+
+25.crd.yaml
+```
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: myapps.example.com
+spec:
+  group: example.com
+  versions:
+  - name: v1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              size:
+                type: integer
+  scope: Namespaced
+  names:
+    plural: myapps
+    singular: myapp
+    kind: MyApp
+    shortNames:
+    - ma
+```
+Installare la CRD:
+
+```
+k apply -f 25.crd.yaml
+```
+
+Creare lo YAML dell'oggetto example-myapp di tipo MyApp:
+
+25.example-myapp.yaml
+```
+apiVersion: example.com/v1
+kind: MyApp
+metadata:
+  name: example-myapp
+  namespace: crd-ns
+spec:
+  size: 3
+```
+
+Creare example-myapp:
+```
+k apply -f 25.example-myapp.yaml
+```
+
+Visualizzare la CRD e l’oggetto:
+
+```
 kubectl get crd myapps.example.com
 kubectl get myapp -n crd-ns	
+```
 
-
-
+## CKA Prep 2025 
 
 
