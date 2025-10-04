@@ -1,5 +1,5 @@
 ## CKA Prep 2025 
-**Nota:** _per il setup, eseguire cka-setup.sh_
+**Nota:** _per il setup dell'esame, eseguire cka-setup.sh._
 _Il nome del namespace del singolo task è indicato tra parentesi_ 
 
 ### 1. HPA Configuration (hpa-ns)
