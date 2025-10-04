@@ -1972,7 +1972,6 @@ replicaset.apps/my-nginx-nginx-5454dc9598   2         2         2       52s
 
 ```
 
-
 ### 24. Multi-container Pod (multi-ns)
 **Obiettivo:**
 
