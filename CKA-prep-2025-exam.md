@@ -39,7 +39,7 @@ Creazione di una resource quota per un WordPress impostando la request CPU a 500
 ### 7. PVC + Pod (pvc-ns)
 **Obiettivo:**
 
-Creazione di un PVC wp-pvc e associazione ad un pod Nginx. Creare anche un PV corrispondente (di tipo hostPath).
+Creazione di un PVC wp-pvc da 1GiB e associazione ad un pod Nginx. Creare anche un PV corrispondente (di tipo hostPath).
 
 ### 8. Sidecar Container (sidecar-ns)
 **Obiettivo:**
