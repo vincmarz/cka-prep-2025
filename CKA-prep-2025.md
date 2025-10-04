@@ -1,5 +1,5 @@
-#### CKA Prep 2025 
-## Nota: per il setup, eseguire cka-setup.sh
+## CKA Prep 2025 
+#### Nota: per il setup, eseguire cka-setup.sh
 
 ### 1. HPA Configuration (hpa-ns)
 **Obiettivo:**
