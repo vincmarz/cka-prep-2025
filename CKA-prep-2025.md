@@ -1,5 +1,6 @@
 ## CKA Prep 2025 
 #### Nota: per il setup, eseguire cka-setup.sh
+#### Il nome del namespace del singolo task è indicato tra parentesi 
 
 ### 1. HPA Configuration (hpa-ns)
 **Obiettivo:**
@@ -934,7 +935,7 @@ Verifica assegnazione IP:
 kubectl get pods -o wide
 ```
 
-### 12. RBAC 
+### 12. RBAC (rbac-ns)
 **Obiettivo:**
 
 Nel namespace rbac-ns creare una Role pod-reader-role che permetta di leggere i pod con i verbi get,watch e list, un ServiceAccount pod-reader, e legare il tutto con un RoleBinding.
