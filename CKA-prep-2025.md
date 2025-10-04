@@ -994,7 +994,8 @@ yes
 ### 13. Node Affinity + Tolerations (scheduling-ns)
 **Obiettivo:**
 
-Schedulare pod su un nodo con etichetta specifica e tollerare un taint.
+Schedulare il pod affinity-pod con immagine busybox che esegua il comando "sleep 3600". Il nodo deve essere schedulato su due dei tre nodi a disposizione del cluster:
+worker1-k8s e worker3-k8s.
 
 **Risoluzione:**
 Aggiungere un taint ai nodi del cluster:
@@ -1002,7 +1003,7 @@ Aggiungere un taint ai nodi del cluster:
 k taint node worker1-k8s worker2-k8s worker3-k8s key1=value1:NoSchedule
 ```
 
-Creare il pod affinity-pod che venga schedulato sul nodo worker1-k8s del cluster Kubenernetes: 
+Creare il pod affinity-pod: 
 
 13.pod.yaml
 ```
@@ -1026,6 +1027,7 @@ spec:
             operator: In
             values:
             - worker1-k8s
+            - worker3-k8s
   containers:
   - name: busybox
     image: busybox
@@ -1034,10 +1036,10 @@ spec:
 ```
 k apply -f 13.pod.yaml
 ```
-Cleanup:
+
+Nota: per poter continuare gli esercizi rimuovere il taint sui nodi del cluster:  
 ```
 k taint node worker1-k8s worker2-k8s worker3-k8s key1=value1:NoSchedule-
-k delete -f 13.pod.yaml
 ```
 
 ### 14. ConfigMap & Secret (config-ns)
