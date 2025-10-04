@@ -20,7 +20,7 @@ Verifica:
 kubectl get hpa -n hpa-ns
 kubectl describe hpa nginx-hpa -n hpa-ns
 ```
-Aumentare il carico per osservare come reagisce l'autoscaler all'aumento del carico. 
+Possiamo aumentare il carico per osservare come reagisce l'autoscaler all'aumento del workload. 
 Per fare ciò, avviare un Pod diverso che funga da client.
 Il container all'interno del Pod client viene eseguito in un ciclo infinito, inviando query al servizio Apache.
 Eseguirlo in un terminale separato in modo che la generazione del carico continui.
