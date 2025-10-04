@@ -81,6 +81,20 @@ Installare ArgoCD v.7.8 senza CRD.
 kubectl create ns argocd-ns
 helm repo add argo https://argoproj.github.io/argo-helm
 helm repo update
+```
+Verificare la presenza della versione richiesta:
+
+```
+helm search repo -l | grep argo-cd
+[...]
+argo/argo-cd                            	7.8.1        	v2.14.2                                       	A Helm chart for Argo CD, a declarative, GitOps...
+argo/argo-cd                            	7.8.0        	v2.14.1                                       	A Helm chart for Argo CD, a declarative, GitOps...
+argo/argo-cd                            	7.7.23       	v2.13.4                                       	A Helm chart for Argo CD, a declarative, GitOps...
+[...]
+```
+
+Installare l'Helm Chart richiesto, senza le CRD:
+```
 helm install argocd argo/argo-cd --version 7.8.0 --namespace argocd-ns --skip-crds
 ```
 Check:
