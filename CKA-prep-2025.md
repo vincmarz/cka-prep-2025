@@ -172,9 +172,9 @@ L'ordine ascendente mostra il pod priority in fondo alla lista.
 ### 5. Ingress Setup (ingress-ns)
 **Obiettivo:**
 
-Creazione di un ingress Nginx
+Creazione di un ingress Nginx. Nel namespace è presente il pod web esposto con il service web: creare un Ingress Nginx con host web.local.
 
-Prerequisito: controller Nginx Ingress installato.
+**Prerequisito:** controller Nginx Ingress installato.
 
 **Preparazione:**
 ```
@@ -444,7 +444,7 @@ main running
 Creazione di un HTTPGateway e associazione ad un pod. Nel namespace gateway-ns è presente un deployment nginx-welcome, un service e una configmap. Esporre l'applicazione
 utilizzando un gateway sulla porta 80 e creare un HTTPGateway.
 
-**Requisito:** NGINX Gateway Fabric installato sul cluster Kubernetes.
+**Prequisito:** NGINX Gateway Fabric installato sul cluster Kubernetes.
 
 **Risoluzione:**
 Per il traffico HTTP ruotato da un service utilizzando un Gateway a una HTTPRoute avremo:
@@ -1247,7 +1247,7 @@ spec:
 ### 16. DaemonSet (ds-ns)
 **Obiettivo:**
 
-Deploy di un agent (es. busybox) su tutti i nodi. Nel namespace ds-ns, creare un daemoset busybox-agent per deployare l'agent su tutti i nodi del cluster.
+Deploy di un agent su tutti i nodi. Nel namespace ds-ns, creare un daemoset busybox-agent per deployare l'agent su tutti i nodi del cluster.
  
 **Risoluzione:**
 ```
@@ -1305,8 +1305,7 @@ daemonset.apps/busybox-agent   3         3         3       3            3       
 **Obiettivo:** 
 
 Bloccare tutto il traffico di rete tra pod nel namespace. Nel namespace netpol-ns, ci sono il pod web che espone il service web e il pod app. 
-Creare una NetworkPolicy deny-all che blocchi 
-il traffico di rete tra pod nel namespace.
+Creare una NetworkPolicy deny-all che blocchi il traffico di rete tra pod nel namespace.
 
 **Risoluzione:**
 
@@ -1421,7 +1420,7 @@ Simulare il failure di un nodo.
 
 **Risoluzione:**
 
-Applicare il seguetnte taint al nodo:
+Applicare il seguente taint al nodo:
 ```
 k taint node worker3-k8s key=value:NoSchedule
 ```
@@ -1450,6 +1449,8 @@ k taint nodes worker3-k8s key=value:NoSchedule-
 Creare un PersistentVolume (PV) local-pv da 1GB e un PersistentVolumeClaim (PVC) local-pvc che lo usa.
 Utilizzare la storageclass local-path (Nota: la storageclass è già installata). 
 Infine, deployare un Pod pv-pod con immagine busybox:1.28 che monta il PVC ed esegue il comando "sleep 3600".
+
+**Prerequisito:** installare sul cluster una storageclass locale, ad esempio local-path
 
 **Risoluzione:**
 Creare il PV:
@@ -1546,8 +1547,10 @@ k -n storage-ns describe po  pv-pod | grep mnt -A1
 ### 20. StatefulSet (stateful-ns)
 **Obiettivo:**
 
-Deploy di uno StatefulSet dell'immagine nginx:stable con 3 repliche, che monta un volume PVC www,per ogni replica, per il path /usr/share/nginx/html.
-Utilizzate la storageclass local-path (Nota: la storageclass è già installata). 
+Deploy di uno StatefulSet dell'immagine nginx:stable con 3 repliche, che monta un volume PVC www, per ogni replica, per il path /usr/share/nginx/html.
+Utilizzare una storageclass locale.
+
+**Prerequisito:** installare sul cluster una storageclass locale, ad esempio local-path. 
 
 **Risoluzione:**
 Creare un template dello statefulset a partire dal deployment:
@@ -1932,7 +1935,7 @@ Commercial support is available at
 ### 23. Deploy con Helm (helm-ns)
 **Obiettivo:**
 
-Installare la versione 2.1.1 di nginx/wiremind  con Helm nel namespace helm-ns, impostando replica a 2.
+Installare la versione 2.1.1 di nginx/wiremind con Helm nel namespace helm-ns, impostando replica a 2.
 
 **Risoluzione:**
 
@@ -1993,8 +1996,8 @@ replicaset.apps/my-nginx-nginx-5454dc9598   2         2         2       52s
 ### 24. Multi-container Pod (multi-ns)
 **Obiettivo:**
 
-Creare un Pod multi-container con 2 container: il container nginx che serve pagina web e il container writer con immagine busybox 
-che scrive ogni 5s in un volume condiviso /data
+Creare un Pod multi-container con 2 container: il container nginx che serve una pagina web e il container writer con immagine busybox 
+che scrive ogni 5s in un volume condiviso /data.
 
 **Risoluzione:**
 
