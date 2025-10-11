@@ -558,7 +558,7 @@ Installazione di CertManager
  * a. Creazione di un certificato self-signed.
  * b. Creazione di un certificato firmato da una Root CA.
 
-**Risoluzione:***
+**Risoluzione:**
 ```
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
