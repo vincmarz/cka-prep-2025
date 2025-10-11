@@ -13,7 +13,6 @@ namespaces=(
   sidecar-ns
   gateway-ns
   cert-ns
-  network-ns
   rbac-ns
   scheduling-ns
   config-ns
