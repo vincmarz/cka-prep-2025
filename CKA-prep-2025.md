@@ -953,7 +953,8 @@ Certificate:
 
 ```
 
-### 11. Calico Network Plugin (network-ns) ###
+### 11. Calico Network Plugin ###
+
 **Obiettivo:**
 
 Installazione del plugin di Network Calico.
