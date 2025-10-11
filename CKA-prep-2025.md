@@ -562,6 +562,13 @@ Installare CertManager alla versione 1.14.4 comprese le CRDs. In seguito:
 ```
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
+```
+Verificare la presenza della versione richiesta:
+```
+helm search repo jetstack/cert-manager --versions | grep grep v1.14.4
+```
+Installare l'Helm Chart:
+```
 helm install cert-manager jetstack/cert-manager --namespace cert-ns --version v1.14.4 --set installCRDs=true
 ```
 
