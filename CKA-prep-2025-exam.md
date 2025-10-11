@@ -62,7 +62,8 @@ Installare CertManager alla versione 1.14.4 comprese le CRDs. In seguito:
   * a. Creare un certificato self-signed.
   * b. Creare un certificato firmato da una Root CA.
 
-### 11. Calico Network Plugin (network-ns) ###
+### 11. Calico Network Plugin ###
+
 **Obiettivo:**
 
 Installazione del plugin di Network Calico.
