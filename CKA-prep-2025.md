@@ -442,7 +442,7 @@ main running
 **Obiettivo:**
 
 Creazione di un HTTPGateway e associazione ad un pod. Nel namespace gateway-ns è presente un deployment nginx-welcome, un service e una configmap. Esporre l'applicazione
-utilizzando un gateway sulla porta 80 e creare un HTTPGateway.
+utilizzando un gateway sulla porta 80 e creare un HTTPGateway. Utilizzare l'hostname mygateway.
 
 **Prequisito:** NGINX Gateway Fabric installato sul cluster Kubernetes.
 
