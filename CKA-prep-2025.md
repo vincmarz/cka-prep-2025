@@ -571,6 +571,28 @@ Installare l'Helm Chart:
 ```
 helm install cert-manager jetstack/cert-manager --namespace cert-ns --version v1.14.4 --set installCRDs=true
 ```
+Check:
+```
+k -n cert-ns get all
+NAME                                           READY   STATUS    RESTARTS   AGE
+pod/cert-manager-7c4b5b58df-pmjgf              1/1     Running   0          3m21s
+pod/cert-manager-cainjector-7bf5c557bb-78clv   1/1     Running   0          3m21s
+pod/cert-manager-webhook-596c6cdc7b-gjdjr      1/1     Running   0          3m21s
+
+NAME                           TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+service/cert-manager           ClusterIP   10.105.153.68   <none>        9402/TCP   3m21s
+service/cert-manager-webhook   ClusterIP   10.105.54.83    <none>        443/TCP    3m21s
+
+NAME                                      READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/cert-manager              1/1     1            1           3m21s
+deployment.apps/cert-manager-cainjector   1/1     1            1           3m21s
+deployment.apps/cert-manager-webhook      1/1     1            1           3m21s
+
+NAME                                                 DESIRED   CURRENT   READY   AGE
+replicaset.apps/cert-manager-7c4b5b58df              1         1         1       3m21s
+replicaset.apps/cert-manager-cainjector-7bf5c557bb   1         1         1       3m21s
+replicaset.apps/cert-manager-webhook-596c6cdc7b      1         1         1       3m21s
+```
 
 Dopo l'installazione sono disponibili le seguenti API resources:
 ```
@@ -624,7 +646,7 @@ FIELDS:
     More info:
     https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
 ```
-a.
+*a.*
 Creare prima un ClusterIssuer quindi un Certificate self-signed:
 
 10.clusterissuer.yaml
@@ -655,6 +677,7 @@ spec:
   secretName: my-cert-tls
   issuerRef:
     name: selfsigned-cluster-issuer
+    kind: ClusterIssuer
 ```
 
 Creare il certificato:
@@ -665,6 +688,7 @@ kubectl apply -f 10.certificate.yaml
 Verifica:
 ```
 k -n cert-ns describe certificate my-cert
+
 Name:         my-cert
 Namespace:    cert-ns
 Labels:       <none>
@@ -672,69 +696,73 @@ Annotations:  <none>
 API Version:  cert-manager.io/v1
 Kind:         Certificate
 Metadata:
-  Creation Timestamp:  2025-09-22T15:32:53Z
-  Generation:          1
-  Resource Version:    487634
-  UID:                 c4fcaa68-91cf-4e03-88bd-9de5ceb04bc9
+  Creation Timestamp:  2025-10-11T10:03:48Z
+  Generation:          2
+  Resource Version:    900628
+  UID:                 4bfdbdca-aebf-4c6b-9048-3d41ebdaed50
 Spec:
   Dns Names:
     example.com
   Issuer Ref:
+    Kind:       ClusterIssuer
     Name:       selfsigned-cluster-issuer
   Secret Name:  my-cert-tls
 Status:
   Conditions:
-    Last Transition Time:        2025-09-22T15:32:53Z
-    Message:                     Issuing certificate as Secret does not exist
-    Observed Generation:         1
-    Reason:                      DoesNotExist
-    Status:                      False
-    Type:                        Ready
-    Last Transition Time:        2025-09-22T15:32:53Z
-    Message:                     Issuing certificate as Secret does not exist
-    Observed Generation:         1
-    Reason:                      DoesNotExist
-    Status:                      True
-    Type:                        Issuing
-  Next Private Key Secret Name:  my-cert-sd6f9
+    Last Transition Time:  2025-10-11T10:09:23Z
+    Message:               Certificate is up to date and has not expired
+    Observed Generation:   2
+    Reason:                Ready
+    Status:                True
+    Type:                  Ready
+  Not After:               2026-01-09T10:09:22Z
+  Not Before:              2025-10-11T10:09:22Z
+  Renewal Time:            2025-12-10T10:09:22Z
+  Revision:                1
 Events:
-  Type    Reason     Age   From                                       Message
-  ----    ------     ----  ----                                       -------
-  Normal  Issuing    13s   cert-manager-certificates-trigger          Issuing certificate as Secret does not exist
-  Normal  Generated  13s   cert-manager-certificates-key-manager      Stored new private key in temporary Secret resource "my-cert-sd6f9"
-  Normal  Requested  13s   cert-manager-certificates-request-manager  Created new CertificateRequest resource "my-cert-1"
+  Type    Reason     Age                    From                                       Message
+  ----    ------     ----                   ----                                       -------
+  Normal  Issuing    7m44s                  cert-manager-certificates-trigger          Issuing certificate as Secret does not exist
+  Normal  Generated  7m43s                  cert-manager-certificates-key-manager      Stored new private key in temporary Secret resource "my-cert-cbqnn"
+  Normal  Requested  2m10s (x2 over 7m43s)  cert-manager-certificates-request-manager  Created new CertificateRequest resource "my-cert-1"
+  Normal  Issuing    2m10s                  cert-manager-certificates-issuing          The certificate has been successfully issued
+
 ```
 ```
 k -n cert-ns get certificate
 NAME      READY   SECRET        AGE
-my-cert   False   my-cert-tls   66s
+my-cert   True   my-cert-tls   8m36s
 
-k -n cert-ns get secret my-cert-sd6f9 -o yaml
+k -n cert-ns get secret my-cert-tls -o yaml
+
 apiVersion: v1
 data:
-  tls.key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2Z0lCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktnd2dnU2tBZ0VBQW9JQkFRRFZza3kyOEMvczByWFQKWmxMUGprWWpIbS9yNjRuekcrdFd4QXlEWGcvWFE5YVBib21ucWQ3bjQrbyswT2Y4dU50enNPR2FlRXRwZnplMQpFeEtzTitCU1hwV0JRK1M5MUgxZmtiaTBEc2RINkJaOWc1dldXVXh6UmphTFRTejAyRWRnYXZGNGVyS1pOOE92CmR6Y3JWamJZR2UwTnhmcTNCMDJMUlpDYkdnc3g4VnoyVmJTZVdDazhFS21ra3ZiRksra2dIcjE4T0hkbmc3bDEKUm9EMHN2Q3g4US85czVQQ3dWVHRjNzRObkFPeEE0ZGZ1RzA2MzdNR2p5NFR0SzhtdVlneWhsU3VoMmdONVdUdApYQnhSdm1CN1ZrM2ltc0ZWRlY5UzhaaVVqdmNDVGJlMG1oR2QyY1kxUE1RKzVzNkRXYVVzeDVoeUk0TzFjWTZOCjV2QmpMUkVuQWdNQkFBRUNnZ0VBS3Y3ZTFJZnEvSmxBb0RJY1EwcDY3aUgzbnQ0Yk9XREtyd0J2REJkbTFJYi8KcW9neEJoejFqbTZhK055TGNKdTQrOFFCQUZWbnh1Z2p5emoxTHRWbk91dHc1VHRGMExQcUxjcGlBVWhmN0NYVQpNSmpFU0JKYmdXNEZGMjRGdDVXMGRyL05xZEgyRVVIWkMzclBETmNoM2NVSm54WFFaZmNBTVI5a0F2RHdnN0dQCjVzd2hkL05XcmNzTmQxVVJBdTd6S1VZUHZyWmVLSWw3czUvTU4vRFkvbExjSlhxLytIa2IxN2pGM1JWdWh3SDAKYXQxWWlPVFVmM2tGRHJJVFdmd01IV3plYUw1OGdWbjhROXVrQ3ZhUHBEM1l4NmNhYkNZRnZKRVVKbERYTGpMUApURHRRSEZhbDdXZllRNElwNTFKZE50cExHNVFDM3ZGVjFEUEthbXh2RVFLQmdRRFdBVGdwK2hjM2x5dzdGT2pqCkxoRGlSSUN5SDVLa2FqT1FHOVlsa2lSMkRtUnRuT1VGWTB0L2NHbEI3Uk9KK2JWNEdkYmY0aWpwVzVzQ0ZkL2kKblhKMFVEUVlkOVVwTWFaeFJsL3pNNzRIZGc2TXd3Qm54MC9keWZ6THk2S3Vsc0JmZndCbEdyNS8vc05pSUs4WQpTQ0ZQVDVuNWtqRFFldHdaS3h1NTlQZHNOUUtCZ1FEL29aZnM5SWxaRUJEVDc3ZVZGYzQ0bC9RUjNzTUJ1TjFNCjd5SjRDOEMrbXhaa0F4aE5ud0NrUnFFbVVWRHJLb0JhdmFKdGdJYXd1OUNpQ1pNUGVmT3J3VGhEQkNtTEFkeWEKN2xEWlJkMzQ1ektjam1KdlBDVHBSbGs4bjlLV2ZEWEJpRXRaV05pRm5wNDlESURXbisvOGlKUkpFS2dqdktnOApvSFkwTEp4YmF3S0JnQ1EzY3B6UUFTdmNQcFVGRmVDVWhERDJyTno0TU9YNFB4K3RSbEYzYVFvOXAwdFJtUVNQCmFGQjU0cVpRaTlUMjJIb3B6VTU0UkxveFVZdEp6bWpZZ20waXdaNCtjV21XU0hlMUZEbmhVTkNNYnl2dE9GMVgKd3JGakpKQU10MHhhb05YSWRYV20wQVJ6UmZlT1ZuT0NpWGlWblJZNllsNTEzRmU2RHVncWg5RGRBb0dCQUoxSApUUFFyV0Q0RjFuU3ZMcUo1Y2hINzI5MEswNnhCazFiOFlwYTlsRzh4ZUVzOFpEMk5zSlZpSjFBdUE3MU12d0FWCllOUkNtWnd2VWlRQUJBMG5tVFo1Z1NZcWIyenBUbE84Z04zTlVNOE5ZR1JXYmxYR0NXZkZNcTVNSHdNYmxPOW4KN2dRZzE4Y09Xb2x4SWV2ckozcVdoYldXbS95dzNFbkE2RGtkb1czVkFvR0JBSy95YWgxZ0tJRzFFOFRyREVlbQo4UXYwSUxBdExIOFBQeWRFSjVBaEhLSFcyTFI3Y3AzeWY0WTRYakhycGxWZktoZFRQbUhhNnhVVTBOb2EveFBYCk9FLzNqR2daYTRUVjRJYmo2OENUeGROb1hNOXR1N25YalZwUWVXbmphNHdkVUFsMzBCTFJtME9MUFdBYWZlckkKS1dhRkpid1BhKzZ6c2Y2aTMwcVRtZk5sCi0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+  ca.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUN4VENDQWEyZ0F3SUJBZ0lRRE5iNTF1RHJyZzFSWUtWUXRtUlVDVEFOQmdrcWhraUc5dzBCQVFzRkFEQUEKTUI0WERUSTFNVEF4TVRFd01Ea3lNbG9YRFRJMk1ERXdPVEV3TURreU1sb3dBRENDQVNJd0RRWUpLb1pJaHZjTgpBUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBS3FhbXRLU0dCMU9tVURtM01hcGN6NnlqTk9vL2FzSEtuakF4R0NJCm8xZHlwOU1UcWhrZjFWOGtXMEdjK0JzUloxSGF1ejFQeGI5MVVmSmRiK1NGQmhYd2NpWE5MYzNyeGs4Nk1nSE8KdkVIVUY4Y2VxekREQzlIWWJPVW1lL0p6ZmMwNGszU1dPTDQ0MkxiZjQ0djdJcS9qY2w1RVdIK1Jsc2RiR09TQgpybDBqcWt1VS9XanpyQ1RMTTUyVnZYZHBjbk8xSmdhR3BuOThNNUExN0haUFZ5Z3RMaGZvSm5WM2V2YUtNZjJNCkhuZ2U2T0UydXJSYmExamc5QXNHaUJkam5sSWFiOStXN1dUdTdCUDgvTEdLZlp0STU1QmRQMVNwd21NazBicmEKZmQzdDU5RzFsSnNpQWQ5Tm9uWVQ1ZVhpWkJtT3J0MjZMQTBUdmVhSVlMbTNVeE1DQXdFQUFhTTdNRGt3RGdZRApWUjBQQVFIL0JBUURBZ1dnTUF3R0ExVWRFd0VCL3dRQ01BQXdHUVlEVlIwUkFRSC9CQTh3RFlJTFpYaGhiWEJzClpTNWpiMjB3RFFZSktvWklodmNOQVFFTEJRQURnZ0VCQUVycFF5QnIxcEM2ZCt5OWJFaHIxS0RiblRNSEIxSlgKdUVnaXhIS0NoTnFFUjlZRTViaDVoZ2t5TDk0bTNhajgxK3ozWmF2ZE9TWE14d0FNWkZncHF1T3lFV1NLTkJNKwpheWlYU2o3VUYxNjBoc0RtV0t5NFpCemQxSTdnckt1TnJzK1AvRDE2eWlkYk5PdnR6ZmdzaFlYTHR0c1QwUk1tCnZhLzBDQzhIL2FVdXBFSEw3Nm1obm1vZmFWd0RkeE5CUk5OMW1uOWxKYXc5ZDd4SjlCYTZDYUliS0FMYnNaYkwKUWt6aXFUZFowdWFlZXhpTFFlckJRYXR0THNFcjNPc2xBdU8yNG5SYng1Y2tuL1hoOUNVYzhEVTdsVTEvbk5aSwp4MXBOZUFpa0pDZmhyczM0Q0c4ckVtZlluMUw5ZmdIcEVKWlhseTgxNG5NQ1lqNWVvd2l2RTNFPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUN4VENDQWEyZ0F3SUJBZ0lRRE5iNTF1RHJyZzFSWUtWUXRtUlVDVEFOQmdrcWhraUc5dzBCQVFzRkFEQUEKTUI0WERUSTFNVEF4TVRFd01Ea3lNbG9YRFRJMk1ERXdPVEV3TURreU1sb3dBRENDQVNJd0RRWUpLb1pJaHZjTgpBUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBS3FhbXRLU0dCMU9tVURtM01hcGN6NnlqTk9vL2FzSEtuakF4R0NJCm8xZHlwOU1UcWhrZjFWOGtXMEdjK0JzUloxSGF1ejFQeGI5MVVmSmRiK1NGQmhYd2NpWE5MYzNyeGs4Nk1nSE8KdkVIVUY4Y2VxekREQzlIWWJPVW1lL0p6ZmMwNGszU1dPTDQ0MkxiZjQ0djdJcS9qY2w1RVdIK1Jsc2RiR09TQgpybDBqcWt1VS9XanpyQ1RMTTUyVnZYZHBjbk8xSmdhR3BuOThNNUExN0haUFZ5Z3RMaGZvSm5WM2V2YUtNZjJNCkhuZ2U2T0UydXJSYmExamc5QXNHaUJkam5sSWFiOStXN1dUdTdCUDgvTEdLZlp0STU1QmRQMVNwd21NazBicmEKZmQzdDU5RzFsSnNpQWQ5Tm9uWVQ1ZVhpWkJtT3J0MjZMQTBUdmVhSVlMbTNVeE1DQXdFQUFhTTdNRGt3RGdZRApWUjBQQVFIL0JBUURBZ1dnTUF3R0ExVWRFd0VCL3dRQ01BQXdHUVlEVlIwUkFRSC9CQTh3RFlJTFpYaGhiWEJzClpTNWpiMjB3RFFZSktvWklodmNOQVFFTEJRQURnZ0VCQUVycFF5QnIxcEM2ZCt5OWJFaHIxS0RiblRNSEIxSlgKdUVnaXhIS0NoTnFFUjlZRTViaDVoZ2t5TDk0bTNhajgxK3ozWmF2ZE9TWE14d0FNWkZncHF1T3lFV1NLTkJNKwpheWlYU2o3VUYxNjBoc0RtV0t5NFpCemQxSTdnckt1TnJzK1AvRDE2eWlkYk5PdnR6ZmdzaFlYTHR0c1QwUk1tCnZhLzBDQzhIL2FVdXBFSEw3Nm1obm1vZmFWd0RkeE5CUk5OMW1uOWxKYXc5ZDd4SjlCYTZDYUliS0FMYnNaYkwKUWt6aXFUZFowdWFlZXhpTFFlckJRYXR0THNFcjNPc2xBdU8yNG5SYng1Y2tuL1hoOUNVYzhEVTdsVTEvbk5aSwp4MXBOZUFpa0pDZmhyczM0Q0c4ckVtZlluMUw5ZmdIcEVKWlhseTgxNG5NQ1lqNWVvd2l2RTNFPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+  tls.key: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcEFJQkFBS0NBUUVBcXBxYTBwSVlIVTZaUU9iY3hxbHpQcktNMDZqOXF3Y3FlTURFWUlpalYzS24weE9xCkdSL1ZYeVJiUVp6NEd4Rm5VZHE3UFUvRnYzVlI4bDF2NUlVR0ZmQnlKYzB0emV2R1R6b3lBYzY4UWRRWHh4NnIKTU1NTDBkaHM1U1o3OG5OOXpUaVRkSlk0dmpqWXR0L2ppL3NpcitOeVhrUllmNUdXeDFzWTVJR3VYU09xUzVUOQphUE9zSk1zem5aVzlkMmx5YzdVbUJvYW1mM3d6a0RYc2RrOVhLQzB1RitnbWRYZDY5b294L1l3ZWVCN280VGE2CnRGdHJXT0QwQ3dhSUYyT2VVaHB2MzVidFpPN3NFL3o4c1lwOW0wam5rRjAvVktuQ1l5VFJ1dHA5M2UzbjBiV1UKbXlJQjMwMmlkaFBsNWVKa0dZNnUzYm9zRFJPOTVvaGd1YmRURXdJREFRQUJBb0lCQUh4SEpiTnhRMm5PQU92NwpnU2FpOTlYYmdhVUtmTWVpNzdpSlRFUzZKS3NtVmNUNGxUZTZMZGdpQnV3MEtiU21KK3JEK1JQLzBhRFlHUHNDClArbHJVZlNYZEwrK3lMZ3lJZ05DOUh6R21mTW1TcS85MGwweUtLRVVGTGVWSWtPTENFQ0FEMEtseis0YVFSeHUKMmpiMW1kNGhSUVlRcVpzOGRtY0JJSkFOTy9TU1B1d0hFb2p3RFVxTUlzYlhFQS9HZHdZZmVqdkRpWWVBbnRrWQp2aFM4WlNoTWpGUUZFZE40L0J3RnY3TVQ1QUtDdHd4TXpXWXN1VkY4WmZSSlBSMlJEckxGNTN4SjVOV3o4NjFTCmFwYkpKSEtuTW9FOUdkQnE1Ymh0dzZ4VHoxeTJNeEpJQUdyeTQxakhrZHdhQWJmNHlDd2NhR1dJN2l1SC9LYlEKM29XekVSRUNnWUVBMkNpTzhNZmR1VVFLWHp5ZjFvTVVPZHZqTWxRS1BlaHUzd0ZncXo0aWxkMElldGl1YWhqLwo3TnpPUzNuemZlRlZ3RFUyaWw0L3lWelpQQ0FnQm5XZXRRS1Q0K2dORnNZN2tSZmNESFdUcVRPbjNRU09MQVBKCk9vVGxFc0tqZkVndTlwYVFWekFDTXd3L3V5M3RBSy9ETmgyZGtESVB0NGMydGhJbWIyd2tDSHNDZ1lFQXlneU8KUmxQQ09mZTVFRFNvaXBBODdQdGZqK2pVRXg3allvQllyQmo2M3RYOWVNb3o0Q3JpRllrSFVuMVYxRDNYNURJVgp4S2dqcFkzOHVwRjNyVWdrc05ZT1oxenlsWS9MYmhGVi81OXpwcnhIbThQRUtiZDVrYkNwYWcxZkxUV2xTbGF2CmlNNk12YVBncGRrTlJTRzdWVndmS3hHRk5kK0E2cVRUdy8vaU9Fa0NnWUJ4M292T1U3dDl5VllkYlhaV0xwOE4KQzhUWDBtWEN6eHI0NTJUaFVNNHZYRTBIU2ZZM2RndjczeVhkcE5TY1Q0UTR5TTkrZkwvbGQ4QUlhSFAyY3llegorek9sTDYwVmZrQUs0eUxNZlhQWUFwby9XQkw5Sk5Gd3ZtbGVSS0tTNmdPemF3V0dxSWZBRklmT054ZE84VWhJCnpia2ZLUUFXa21oRDZiUE5wbzRrMlFLQmdRQ3lVQzVuNXBlczdQRUlXbEM4S050OEVjU2VqczVMS2FGblZ2bnEKdUFqL0REK3NrRmNENlJTcUNNckxoQTF4U0RyMkN6V20zdlRHc081d0FOMXJzaFdmY3VvM1VwSk1hQ0VTdkgzMwpJTlBDUEx1OXZpR3E1MStFc2pKeGcrZVJVSnpWWkhkNTl6L0NSWlNIQ1cxcXE0QldydnhhMkJXR0cvLzhGUWRICkhOYWE4UUtCZ1FDczdySXcwWDNLZjBXS28rN1ZVOHp5M0YwbzA4bjVUcUZOYmtmQTlaMmx0OFR1VjRrVndZTDgKSW5uazd5R1lhVytyamE4TlA1Wlg4RnZCaXhBcnVEMkVmUmZ2MVB3KzFSZWJEcXJVTlVvNXVxdGFnbUZzakRnNAo5NHlORWIrSjFsZzc4ZXRWQ0lOQ3pRT3JFOEV1OHdNWGcrS0U3c0V0NVRIN3dCcjBPZStUOFE9PQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=
 kind: Secret
 metadata:
-  creationTimestamp: "2025-09-22T15:32:53Z"
-  generateName: my-cert-
+  annotations:
+    cert-manager.io/alt-names: example.com
+    cert-manager.io/certificate-name: my-cert
+    cert-manager.io/common-name: ""
+    cert-manager.io/ip-sans: ""
+    cert-manager.io/issuer-group: ""
+    cert-manager.io/issuer-kind: ClusterIssuer
+    cert-manager.io/issuer-name: selfsigned-cluster-issuer
+    cert-manager.io/uri-sans: ""
+  creationTimestamp: "2025-10-11T10:09:22Z"
   labels:
-    cert-manager.io/next-private-key: "true"
     controller.cert-manager.io/fao: "true"
-  name: my-cert-sd6f9
+  name: my-cert-tls
   namespace: cert-ns
-  ownerReferences:
-  - apiVersion: cert-manager.io/v1
-    blockOwnerDeletion: true
-    controller: true
-    kind: Certificate
-    name: my-cert
-    uid: c4fcaa68-91cf-4e03-88bd-9de5ceb04bc9
-  resourceVersion: "487632"
-  uid: e9cad688-3c22-40ba-a37f-2d3638ac17e0
-type: Opaque
+  resourceVersion: "900622"
+  uid: 77ff1426-4acc-46b7-8e01-a990e9800dcc
+type: kubernetes.io/tls
 
-k -n cert-ns get secret my-cert-sd6f9 -o jsonpath='{.data.tls\.key}' | base64 -d
------BEGIN PRIVATE KEY-----
+
+k -n cert-ns get secret my-cert-tls -o jsonpath='{.data.tls\.key}' | base64 -d
+-----BEGIN RSA PRIVATE KEY-----
 MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDVsky28C/s0rXT
 ZlLPjkYjHm/r64nzG+tWxAyDXg/XQ9aPbomnqd7n4+o+0Of8uNtzsOGaeEtpfze1
 ExKsN+BSXpWBQ+S91H1fkbi0DsdH6BZ9g5vWWUxzRjaLTSz02EdgavF4erKZN8Ov
@@ -761,13 +789,23 @@ YNRCmZwvUiQABA0nmTZ5gSYqb2zpTlO8gN3NUM8NYGRWblXGCWfFMq5MHwMblO9n
 8Qv0ILAtLH8PPydEJ5AhHKHW2LR7cp3yf4Y4XjHrplVfKhdTPmHa6xUU0Noa/xPX
 OE/3jGgZa4TV4Ibj68CTxdNoXM9tu7nXjVpQeWnja4wdUAl30BLRm0OLPWAaferI
 KWaFJbwPa+6zsf6i30qTmfNl
------END PRIVATE KEY-----
+-----END RSA PRIVATE KEY-----
+```
+Verifica sui secret:
+
+```
+k -n cert-ns  get secret
+NAME                                 TYPE                 DATA   AGE
+cert-manager-webhook-ca              Opaque               3      130m
+my-cert-tls                          kubernetes.io/tls    3      8m58s
+sh.helm.release.v1.cert-manager.v1   helm.sh/release.v1   1      131m
+
 ```
 
-b. Per avere un certificato firmato da una Root CA self-signed occorrono:
-1b. una Root CA self-signed
-2b. un Issuer CA che usa la root CA
-3b. un certificato firmato dalla CA
+*b.* Per avere un certificato firmato da una Root CA self-signed occorrono:
+ * 1b. una Root CA self-signed
+ * 2b. un Issuer CA che usa la root CA
+ * 3b. un certificato firmato dalla CA
 
 
 1b. Creare una Root CA self-signed:
@@ -803,6 +841,8 @@ metadata:
 spec:
   ca:
     secretName: root-ca-tls
+
+k apply -f 10.issuerca.yaml
 ```
 3b. Creare un personal certificate firmato dalla Root CA:
 
