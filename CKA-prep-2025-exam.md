@@ -58,9 +58,9 @@ utilizzando un gateway sulla porta 80 e creare un HTTPGateway. Utilizzare l'host
 ### 10. Cert-Manager + Self-Signed Cert (cert-ns)
 **Obiettivo:**
 
-Installazione di CertManager 
-  * a. Creazione di un certificato self-signed.
-  * b. Creazione di un certificato firmato da una Root CA.
+Installare CertManager alla versione 1.14.4 comprese le CRDs. In seguito:
+  * a. Creare un certificato self-signed.
+  * b. Creare un certificato firmato da una Root CA.
 
 ### 11. Calico Network Plugin (network-ns) ###
 **Obiettivo:**
