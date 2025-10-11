@@ -555,8 +555,8 @@ curl mygateway:30525
 **Obiettivo:**
 
 Installazione di CertManager 
-a. Creazione di un certificato self-signed.
-b. Creazione di un certificato firmato da una Root CA.
+ * a. Creazione di un certificato self-signed.
+ * b. Creazione di un certificato firmato da una Root CA.
 
 **Risoluzione:***
 ```
