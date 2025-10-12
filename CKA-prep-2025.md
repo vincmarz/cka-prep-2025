@@ -2006,9 +2006,14 @@ wiremind/nginx             	2.1.1        	           	An NGINX HTTP server
 
 ```
 
+Verificare i values del repository remoto:
+```
+helm show values wiremind/nginx --version v2.1.1 | grep replica
+```
+
 Installare Nginx:
 ```
-helm -n helm-ns install my-nginx wiremind/nginx --set replicaCount=2 --version 2.1.1
+helm -n helm-ns install my-nginx wiremind/nginx --set replicaCount=2 --version v2.1.1
 ```
 
 Verifica:
