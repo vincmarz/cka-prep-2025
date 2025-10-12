@@ -1058,8 +1058,8 @@ yes
 ### 13. Node Affinity + Tolerations (scheduling-ns)
 **Obiettivo:**
 
-Schedulare il pod affinity-pod con immagine busybox che esegua il comando "sleep 3600". Il nodo deve essere schedulato su due dei tre nodi a disposizione del cluster:
-worker1-k8s e worker3-k8s.
+Schedulare il pod affinity-pod con immagine busybox che esegua il comando "sleep 3600". Il nodo deve essere schedulato su uno dei nodi a disposizione del cluster
+utilizzando l'affinityi e le tolerations.
 
 **Risoluzione:**
 Aggiungere un taint ai nodi del cluster:
@@ -1091,7 +1091,6 @@ spec:
             operator: In
             values:
             - worker1-k8s
-            - worker3-k8s
   containers:
   - name: busybox
     image: busybox
@@ -1833,8 +1832,8 @@ ca.csr  ca-key.pem  ca.pem  config.json  csr.json
 ```
 
 Creare la richiesta per il certificato Ingress ingress-csr.json:
-
 ```
+cat ingress-csr.json
 {
   "CN": "web.local",
   "hosts": [
