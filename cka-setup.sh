@@ -24,7 +24,7 @@ namespaces=(
   ingress-ns
   helm-ns 
   multi-ns 
-  cdr-ns 
+  crd-ns 
   debug-ns 
 )
 
