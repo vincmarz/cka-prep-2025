@@ -1063,7 +1063,7 @@ yes
 **Obiettivo:**
 
 Schedulare il pod affinity-pod con immagine busybox che esegua il comando "sleep 3600". Il nodo deve essere schedulato su uno dei nodi a disposizione del cluster
-utilizzando l'affinityi e le tolerations.
+utilizzando l'affinity e le tolerations.
 
 **Risoluzione:**
 Aggiungere un taint ai nodi del cluster:
