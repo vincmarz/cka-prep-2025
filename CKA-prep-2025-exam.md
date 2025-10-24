@@ -79,8 +79,7 @@ Nel namespace rbac-ns creare una Role pod-reader-role che permetta di leggere i 
 ### 13. Node Affinity + Tolerations (scheduling-ns)
 **Obiettivo:**
 
-Schedulare il pod affinity-pod con immagine busybox che esegua il comando "sleep 3600". Il nodo deve essere schedulato su due dei tre nodi a disposizione del cluster:
-worker1-k8s e worker3-k8s.
+Schedulare il pod affinity-pod con immagine busybox che esegua il comando "sleep 3600". Il nodo deve essere schedulato su uno dei nodi a disposizione del cluster utilizzando l'affinity e le tolerations. 
 
 ### 14. ConfigMap & Secret (config-ns)
 **Obiettivo:** 
