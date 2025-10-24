@@ -1340,6 +1340,9 @@ spec:
         image: busybox
         name: busybox
         resources: {}
+      tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        effect: "NoSchedule"
 status: {}
 ```
 
@@ -1350,13 +1353,15 @@ k apply -f 16.daemonset.yaml
 Verifica:
 ```
 k -n ds-ns get all -o wide
-NAME                      READY   STATUS    RESTARTS   AGE   IP            NODE          NOMINATED NODE   READINESS GATES
-pod/busybox-agent-599nn   1/1     Running   0          18s   10.10.7.255   worker2-k8s   <none>           <none>
-pod/busybox-agent-jrlvt   1/1     Running   0          18s   10.10.195.5   worker1-k8s   <none>           <none>
-pod/busybox-agent-sppqz   1/1     Running   0          18s   10.10.159.9   worker3-k8s   <none>           <none>
+
+NAME                  READY   STATUS    RESTARTS   AGE   IP             NODE          NOMINATED NODE   READINESS GATES
+busybox-agent-4h4b9   1/1     Running   0          36m   10.10.195.55   worker1-k8s   <none>           <none>
+busybox-agent-kb5zq   1/1     Running   0          35m   10.10.7.253    worker2-k8s   <none>           <none>
+busybox-agent-qrxj9   1/1     Running   0          36m   10.10.159.27   worker3-k8s   <none>           <none>
+busybox-agent-zklpm   1/1     Running   0          37m   10.10.199.44   master-k8s    <none>           <none>
 
 NAME                           DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE   CONTAINERS   IMAGES    SELECTOR
-daemonset.apps/busybox-agent   3         3         3       3            3           <none>          18s   busybox      busybox   app=busybox-agent
+daemonset.apps/busybox-agent   3         3         3       3            3           <none>          38m   busybox      busybox   app=busybox-agent
 ```
 
 ### 17. NetworkPolicy (netpol-ns)
