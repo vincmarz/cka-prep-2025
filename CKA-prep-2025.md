@@ -1103,6 +1103,13 @@ spec:
 ```
 k apply -f 13.pod.yaml
 ```
+Check:
+
+```
+k -n scheduling-ns get po -o wide
+NAME           READY   STATUS    RESTARTS   AGE   IP            NODE          NOMINATED NODE   READINESS GATES
+affinity-pod   1/1     Running   0          17s   10.10.159.6   worker3-k8s   <none>           <none>
+```
 
 Nota: per poter continuare gli esercizi rimuovere il taint sui nodi del cluster:  
 ```
