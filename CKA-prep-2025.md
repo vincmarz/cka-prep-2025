@@ -6,7 +6,8 @@ _Il nome del namespace del singolo task è indicato tra parentesi_
 **Obiettivo:**
 
 Creare un HPA per scalare automaticamente un deployment in base all'utilizzo della CPU.
-Il deployment hpa-app deve avere un minimo di 1 e un massimo di 5 pod e lavorare con l'utilizzo di CPU al 50%.
+Il deployment hpa-app deve avere un minimo di 1 e un massimo di 5 pod e lavorare con l'utilizzo di CPU al 50%. Impostare inoltre il parametro
+stabilizationWindowSeconds a 30 secondi.
 
 **Risoluzione:**
 
@@ -38,15 +39,13 @@ net.ipv4.ip_forward                 = 1
 net.bridge.bridge-nf-call-ip6tables = 1
 
 Nota:
-Per installare il package:
+Scricare il package da:
 https://github.com/Mirantis/cri-dockerd/releases/download/v0.3.20/cri-dockerd_0.3.20.3-0.ubuntu-jammy_amd64.deb
 
-occorre come prerequisito aver installato docker:
+Su Ubuntu installare docker-ce:
 ```
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+echo   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+        $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 sudo apt-get update
 sudo apt-get install docker-ce -y
@@ -68,10 +67,10 @@ sudo systemctl enable cri-docker
 
 Verifica:
 ```
-sudo systemctl status cri-docker
+sudo systemctl status cri-docker 
 ```
-Per installare le configurazione di rete per CRI-O configuare il file 99-kubernetes-cri.conf nnella directory /etc/sysctl.d : 
 
+Configurare systcl:
 ```
 cat <<EOF | sudo tee /etc/sysctl.d/99-kubernetes-cri.conf
 net.bridge.bridge-nf-call-iptables  = 1
@@ -80,21 +79,21 @@ net.bridge.bridge-nf-call-ip6tables = 1
 EOF
 ```
 
-Per leggere le configurazioni di sysctl:
-
+Verifica:
 ```
 sudo sysctl --system
 ```
 
-
 ### 3. ArgoCD via Helm 3 (argocd-ns)
 **Obiettivo:**
 
-Installare ArgoCD v.7.8.0 senza CRD.
+Installare ArgoCD v.7.8.0 senza CRD. Installare il repository https://argoproj.github.io/argo-helm con il nome argo. Salvare i valori del chart nel file
+argo-helm.yaml della versione 7.8.0, utilizzando il template senza installare le CRD. Installare ArgoCD dal file argo-helm.yaml. 
 
 **Risoluzione:** 
+
+Aggiungere il repository richiesto assegnando il nome argo:
 ```
-kubectl create ns argocd-ns
 helm repo add argo https://argoproj.github.io/argo-helm
 helm repo update
 ```
@@ -109,47 +108,77 @@ argo/argo-cd                            	7.7.23       	v2.13.4                  
 [...]
 ```
 
-Installare l'Helm Chart richiesto, senza le CRD:
+Verificare quali sono i valori per impostare i CRD nel chart:
 ```
-helm install argocd argo/argo-cd --version 7.8.0 --namespace argocd-ns --skip-crds
+helm -n argocd-ns show values argo/argo-cd --version 7.8.0 | grep -i crd -A3 -B3
+  enabled: false
+
+## Custom resource configuration
+crds:
+  # -- Install and upgrade CRDs
+  install: true
+  # -- Keep CRDs on chart uninstall
+  keep: true
+  # -- Annotations to be added to all CRDs
+  annotations: {}
+  # -- Addtional labels to be added to all CRDs
+  additionalLabels: {}
+
+## Globally shared configuration
 ```
+
+Salvare i valori di default del chart con un template della versione 7.8.0, senza le CRD:
+```
+helm -n argocd-ns template argocd argo/argo-cd --version 7.8.0 --set crds.install=false > argo-helm.yaml
+```
+
+Installare ArgoCD utilizzando il file argo-helm.yaml:
+```
+kubectl apply -f argo-helm.yaml
+```
+
 Check:
 ```
 k -n argocd-ns get all
-NAME                                                    READY   STATUS    RESTARTS   AGE
-pod/argocd-application-controller-0                     1/1     Running   0          108s
-pod/argocd-applicationset-controller-688fdfdbb7-xklmt   1/1     Running   0          108s
-pod/argocd-dex-server-6b7fc4f4c8-sph92                  1/1     Running   0          108s
-pod/argocd-notifications-controller-6d5bdfc788-psdc8    1/1     Running   0          108s
-pod/argocd-redis-5f9fd8f7fb-6hd2j                       1/1     Running   0          108s
-pod/argocd-repo-server-646d6bd9cc-twfgs                 1/1     Running   0          108s
-pod/argocd-server-684949bff-xt8c5                       1/1     Running   0          108s
+NAME                                                            READY   STATUS      RESTARTS   AGE
+pod/argo-cd-argocd-application-controller-0                     1/1     Running     0          31s
+pod/argo-cd-argocd-applicationset-controller-5f6f6b49d9-pjfqc   1/1     Running     0          35s
+pod/argo-cd-argocd-dex-server-f87fd859d-j5pjg                   1/1     Running     0          33s
+pod/argo-cd-argocd-notifications-controller-6c8d8b4d7c-lnqf8    1/1     Running     0          35s
+pod/argo-cd-argocd-redis-6d8d878d8f-sxq6g                       1/1     Running     0          32s
+pod/argo-cd-argocd-redis-secret-init-rzbdt                      0/1     Completed   0          30s
+pod/argo-cd-argocd-repo-server-84964656fd-h9kjq                 1/1     Running     0          34s
+pod/argo-cd-argocd-server-66476f6cb6-p6gcf                      1/1     Running     0          34s
 
-NAME                                       TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
-service/argocd-applicationset-controller   ClusterIP   10.103.82.212    <none>        7000/TCP            109s
-service/argocd-dex-server                  ClusterIP   10.104.70.99     <none>        5556/TCP,5557/TCP   109s
-service/argocd-redis                       ClusterIP   10.109.94.36     <none>        6379/TCP            109s
-service/argocd-repo-server                 ClusterIP   10.111.189.169   <none>        8081/TCP            109s
-service/argocd-server                      ClusterIP   10.110.121.175   <none>        80/TCP,443/TCP      109s
+NAME                                               TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
+service/argo-cd-argocd-applicationset-controller   ClusterIP   10.110.179.19    <none>        7000/TCP            36s
+service/argo-cd-argocd-dex-server                  ClusterIP   10.96.98.146     <none>        5556/TCP,5557/TCP   36s
+service/argo-cd-argocd-redis                       ClusterIP   10.99.252.228    <none>        6379/TCP            35s
+service/argo-cd-argocd-repo-server                 ClusterIP   10.99.163.169    <none>        8081/TCP            36s
+service/argo-cd-argocd-server                      ClusterIP   10.105.193.113   <none>        80/TCP,443/TCP      36s
 
-NAME                                               READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/argocd-applicationset-controller   1/1     1            1           108s
-deployment.apps/argocd-dex-server                  1/1     1            1           108s
-deployment.apps/argocd-notifications-controller    1/1     1            1           108s
-deployment.apps/argocd-redis                       1/1     1            1           108s
-deployment.apps/argocd-repo-server                 1/1     1            1           108s
-deployment.apps/argocd-server                      1/1     1            1           108s
+NAME                                                       READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/argo-cd-argocd-applicationset-controller   1/1     1            1           35s
+deployment.apps/argo-cd-argocd-dex-server                  1/1     1            1           34s
+deployment.apps/argo-cd-argocd-notifications-controller    1/1     1            1           35s
+deployment.apps/argo-cd-argocd-redis                       1/1     1            1           33s
+deployment.apps/argo-cd-argocd-repo-server                 1/1     1            1           35s
+deployment.apps/argo-cd-argocd-server                      1/1     1            1           34s
 
-NAME                                                          DESIRED   CURRENT   READY   AGE
-replicaset.apps/argocd-applicationset-controller-688fdfdbb7   1         1         1       108s
-replicaset.apps/argocd-dex-server-6b7fc4f4c8                  1         1         1       108s
-replicaset.apps/argocd-notifications-controller-6d5bdfc788    1         1         1       108s
-replicaset.apps/argocd-redis-5f9fd8f7fb                       1         1         1       108s
-replicaset.apps/argocd-repo-server-646d6bd9cc                 1         1         1       108s
-replicaset.apps/argocd-server-684949bff                       1         1         1       108s
+NAME                                                                  DESIRED   CURRENT   READY   AGE
+replicaset.apps/argo-cd-argocd-applicationset-controller-5f6f6b49d9   1         1         1       35s
+replicaset.apps/argo-cd-argocd-dex-server-f87fd859d                   1         1         1       33s
+replicaset.apps/argo-cd-argocd-notifications-controller-6c8d8b4d7c    1         1         1       35s
+replicaset.apps/argo-cd-argocd-redis-6d8d878d8f                       1         1         1       33s
+replicaset.apps/argo-cd-argocd-repo-server-84964656fd                 1         1         1       34s
+replicaset.apps/argo-cd-argocd-server-66476f6cb6                      1         1         1       34s
 
-NAME                                             READY   AGE
-statefulset.apps/argocd-application-controller   1/1     108s
+NAME                                                     READY   AGE
+statefulset.apps/argo-cd-argocd-application-controller   1/1     32s
+
+NAME                                         STATUS     COMPLETIONS   DURATION   AGE
+job.batch/argo-cd-argocd-redis-secret-init   Complete   1/1           14s        30s
+
 ```
 
 ### 4. PriorityClass (priority-ns)
@@ -977,45 +1006,26 @@ Certificate:
 
 **Obiettivo:**
 
-Installazione del plugin di Network Calico.
+Installazione del plugin di Network Calico. Installare il CNI Calico utilizzando l'operator Tigera (https://raw.githubusercontent.com/projectcalico/calico/v3.31.0/manifests/tigera-operator.yaml).
 
 **Nota:** Solo su cluster non gestito (bare metal, kubeadm). Evitare se CNI già presente.
 
 **Risoluzione:**
 
-Installare il daemonset di Calico:
+Installare l'operator Tigera e le relative CRD:
 
-calico.yaml
 ```
-apiVersion: apps/v1
-kind: DaemonSet
-metadata:
-  name: calico-node
-  namespace: kube-system
-spec:
-  selector:
-    matchLabels:
-      k8s-app: calico-node
-  template:
-    metadata:
-      labels:
-        k8s-app: calico-node
-    spec:
-      containers:
-      - name: calico-node
-        image: calico/node:v3.27.0
-        env:
-        - name: CALICO_NETWORKING_BACKEND
-          value: "bird"
-        - name: IP_AUTODETECTION_METHOD
-          value: "interface=eth0"
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.31.0/manifests/tigera-operator.yaml
 ```
+
+Installare Calico: 
 ```
-kubectl apply -f network-ns/calico.yaml
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.31.0/manifests/custom-resources.yaml
 ```
-Verifica assegnazione IP:
+
+Verifica dei componenti di Calico:
 ```
-kubectl get pods -o wide
+watch kubectl get tigerastatus
 ```
 
 ### 12. RBAC (rbac-ns)

@@ -6,24 +6,35 @@ _Il nome del namespace del singolo task è indicato tra parentesi_
 **Obiettivo:**
 
 Creare un HPA per scalare automaticamente un deployment in base all'utilizzo della CPU.
-Il deployment hpa-app deve avere un minimo di 1 e un massimo di 5 pod e lavorare con l'utilizzo di CPU al 50%.
+Il deployment hpa-app deve avere un minimo di 1 e un massimo di 5 pod e lavorare con l'utilizzo di CPU al 50%. Impostare inoltre il parametro
+stabilizationWindowSeconds a 30 secondi.
 
-### 2. Installazione CRI-O (su nodo Linux Ubuntu 24.04)
+### 2. Installazione CRI-O (su Linux Ubuntu 22.04)
 **Obiettivo:**
 
-Installare CRI-O su un nodo.
+Installare CRI-O su un nodo. Installare con dpkg il package cri-dockerd_0.3.20.3-0.ubuntu-jammy_amd64.deb disponibile ./02.crio-ns. Avviare e abilitare il servizio.          
+Dopo l'avvio, configurare i seguenti parametri a livello di sistema operativo:
+net.bridge.bridge-nf-call-iptables  = 1
+net.ipv4.ip_forward                 = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+
+Nota:
+https://github.com/Mirantis/cri-dockerd/releases/download/v0.3.20/cri-dockerd_0.3.20.3-0.ubuntu-jammy_amd64.deb
+
 
 ### 3. ArgoCD via Helm 3 (argocd-ns)
 **Obiettivo:**
 
-Installare ArgoCD v.7.8.0 senza CRD.
+Installare ArgoCD v.7.8.0 senza CRD. Installare il repository https://argoproj.github.io/argo-helm con il nome argo. Salvare i valori del chart nel file
+argo-helm.yaml della versione 7.8.0, utilizzando il template senza installare le CRD. Installare ArgoCD dal file argo-helm.yaml.
 
 ### 4. PriorityClass (priority-ns)
 **Obiettivo:**
 
-Creare la priorityclass con il nome high-priority, valore 100000, descrizione "High priority pods" ma che non sia la default priority.
-Utilizzare la priorityclass in un pod priority-pod con immagine busybox. Fare l'elenco dei nomi pod presenti nel namespace priority-ns in 
-ordine decrescente di priority e salvarlo nel file 4.priority.list.
+Creare la priorityclass con il nome high-priority con la descrizione "High priority pods" ma che non sia la default priority.
+Impostare la priorityclass con un valore minimo maggiore della più grande priority dei pod presenti nel namespace priority-ns. 
+Utilizzare la priorityclass high-priority in un pod priority-pod con immagine busybox. 
+Infine salvare in ordine decrescente di priority l'elenco dei pod e salvarlo nel file 4.priority.list.
 
 ### 5. Ingress Setup (ingress-ns)
 **Obiettivo:**
@@ -36,6 +47,7 @@ Creazione di un ingress Nginx. Nel namespace è presente il pod web esposto con 
 **Obiettivo:**
 
 Creazione di una resource quota per un WordPress impostando la request CPU a 500 millicore, la request memory a 512 MB, 1 CPU come limit e 1 GB come limit memory.  
+Creare una replica dell'applicazione per ogni nodo del cluster.
 
 ### 7. PVC + Pod (pvc-ns)
 **Obiettivo:**
@@ -51,8 +63,8 @@ Creazione di un side-container in un pod. Creare un pod sidecar-pod con due cont
 ### 9. HTTP Gateway (gateway-ns)
 **Obiettivo:**
 
-Creazione di un HTTPGateway e associazione ad un pod. Nel namespace gateway-ns è presente un deployment nginx-welcome, un service e una configmap. Esporre l'applicazione
-utilizzando un gateway sulla porta 80 e creare un HTTPGateway. Utilizzare l'hostname mygateway.
+Creazione di un HTTPGateway e associazione ad un pod. Nel namespace gateway-ns è presente un deployment nginx-welcome, un service, una configmap e un ingress. Esporre l'applicazione
+utilizzando un gateway sulla porta 80 e creare un HTTPGateway. Utilizzare l'hostname mygateway e le stesse configurazioni TLS dell'ingress.
 
 **Prequisito:** NGINX Gateway Fabric installato sul cluster Kubernetes.
 
@@ -67,7 +79,7 @@ Installare CertManager alla versione 1.14.4 comprese le CRDs. In seguito:
 
 **Obiettivo:**
 
-Installazione del plugin di Network Calico.
+Installazione del plugin di Network Calico. Installare il CNI Calico utilizzando l'operator Tigera (https://raw.githubusercontent.com/projectcalico/calico/v3.31.0/manifests/tigera-operator.yaml).
 
 **Nota:** Solo su cluster non gestito (bare metal, kubeadm). Evitare se CNI già presente.
 
