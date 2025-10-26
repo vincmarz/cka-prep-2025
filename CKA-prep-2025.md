@@ -28,48 +28,64 @@ Eseguirlo in un terminale separato in modo che la generazione del carico continu
 ```
 kubectl -n hpa-ns run -it load-generator --rm --image=busybox:1.28 --restart=Never -- /bin/sh -c "while sleep 0.01; do wget -q -O- http://hpa-app; done"
 ```
-### 2. Installazione CRI-O (su nodo Linux Ubuntu 24.04)
+### 2. Installazione CRI-O (su nodo Linux Ubuntu 22.04)
 **Obiettivo:**
 
-Installare CRI-O su un nodo.
+Installare CRI-O su un nodo Ubuntu 22. Installare con dpkg il package cri-dockerd_0.3.20.3-0.ubuntu-jammy_amd64.deb disponibile ./02.crio-ns. Avviare e abilitare il servizio. 
+Dopo l'avviao, configurare i seguenti parametri a livello di sistema operativo: 
+net.bridge.bridge-nf-call-iptables  = 1
+net.ipv4.ip_forward                 = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+
+Nota:
+Per installare il package:
+https://github.com/Mirantis/cri-dockerd/releases/download/v0.3.20/cri-dockerd_0.3.20.3-0.ubuntu-jammy_amd64.deb
+
+occorre come prerequisito aver installato docker:
+```
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt-get update
+sudo apt-get install docker-ce -y
+```
 
 **Risoluzione:** 
 
 Dopo il login, eseguire sul nodo:
 
 ```
-sudo apt update
-sudo apt install -y curl gnupg2 software-properties-common
-```
-Aggiungi i repository:
-```
-echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
-echo "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/$CRIO_VERSION/$OS/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable:cri-o:$CRIO_VERSION.list
+sudo dpkg -i cri-dockerd_0.3.20.3-0.ubuntu-jammy_amd64.deb
 ```
 
-Import delle GPG keys:
+Avviare e abilitare il servizio:
 ```
-sudo mkdir -p /usr/share/keyrings
-
-curl -L https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:$CRIO_VERSION/$OS/Release.key | sudo apt-key add -
-curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/Release.key | sudo apt-key add -
+sudo systemctl start cri-docker
+sudo systemctl enable cri-docker 
 ```
 
-Installazione di CRI-O:
-```
-sudo apt update
-sudo apt install -y cri-o cri-o-runc
-```
-Abilitare e avviare il service:
-```
-sudo systemctl daemon-reload
-sudo systemctl enable crio --now
-```
 Verifica:
 ```
-sudo apt info cri-o
-sudo systemctl status crio
+sudo systemctl status cri-docker
 ```
+Per installare le configurazione di rete per CRI-O configuare il file 99-kubernetes-cri.conf nnella directory /etc/sysctl.d : 
+
+```
+cat <<EOF | sudo tee /etc/sysctl.d/99-kubernetes-cri.conf
+net.bridge.bridge-nf-call-iptables  = 1
+net.ipv4.ip_forward                 = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+EOF
+```
+
+Per leggere le configurazioni di sysctl:
+
+```
+sudo sysctl --system
+```
+
 
 ### 3. ArgoCD via Helm 3 (argocd-ns)
 **Obiettivo:**
