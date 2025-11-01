@@ -194,9 +194,9 @@ job.batch/argo-cd-argocd-redis-secret-init   Complete   1/1           14s       
 ### 4. PriorityClass (priority-ns)
 **Obiettivo:**
 
-Creare la priorityclass con il nome high-priority con la descrizione "High priority pods" ma che non sia la default priority. 
+Creare la priorityclass con il nome my-priority con la descrizione "My priority pods" ma che non sia la default priority. 
 Impostare la priorityclass con un valore che sia appena inferiore alla più grande priority dei pod presenti nel namespace priority-ns. 
-Utilizzare la priorityclass high-priority in un pod priority-pod con immagine busybox. Infine salvare in ordine decrescente 
+Utilizzare la priorityclass my-priority in un pod priority-pod con immagine busybox. Infine salvare in ordine decrescente 
 di priority l'elenco dei pod e salvarlo nel file 4.priority.list.
 
 **Risoluzione:**
