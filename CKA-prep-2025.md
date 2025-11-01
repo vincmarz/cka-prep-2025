@@ -675,13 +675,33 @@ replicaset.apps/nginx-gateway-96f76cdcf   1         1         1       6d
 ```
 Dopo aver aggiunto l'hostname mygateway.local al file /etc/hosts:
 ```
-curl -kL https://mygateway.local:30683
+time curl -kL https://mygateway.local:30683
 <html>
   <head><title>Welcome</title></head>
   <body>
     <h1>Welcome to Gateway</h1>
   </body>
 </html>
+
+real	3m36,888s
+user	0m0,032s
+sys	0m0,026s
+
+```
+Nota: testando l'Ingress Nginx, i tempi di risposta sono notevolmente ridotti:
+
+```
+time curl -k https://mygateway.local:31431
+<html>
+  <head><title>Welcome</title></head>
+  <body>
+    <h1>Welcome to Gateway</h1>
+  </body>
+</html>
+
+real	0m0,072s
+user	0m0,024s
+sys	0m0,020s
 ```
 
 
