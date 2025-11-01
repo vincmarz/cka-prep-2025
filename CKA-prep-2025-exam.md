@@ -7,7 +7,7 @@ _Il nome del namespace del singolo task è indicato tra parentesi_
 
 Creare un HPA per scalare automaticamente un deployment in base all'utilizzo della CPU.
 Il deployment hpa-app deve avere un minimo di 1 e un massimo di 5 pod e lavorare con l'utilizzo di CPU al 50%. Impostare inoltre il parametro
-stabilizationWindowSeconds a 30 secondi.
+stabilizationWindowSecond per lo scaleDown a 30 secondi.
 
 ### 2. Installazione CRI-O (su Linux Ubuntu 22.04)
 **Obiettivo:**
