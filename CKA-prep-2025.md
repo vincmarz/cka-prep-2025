@@ -2392,6 +2392,6 @@ kubectl get myapp -n crd-ns
 
 [24. Multi-container Pod](#multi-ns)
 
-[25. Custom Resource Definition (CRD) & Custom Resource](#cdr-ns)
+[25. Custom Resource Definition](#crd-ns)
 
   
