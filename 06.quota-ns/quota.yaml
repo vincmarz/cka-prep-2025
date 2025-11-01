@@ -27,6 +27,7 @@ metadata:
   name: mysql
   namespace: quota-ns
 spec:
+  replicas: 3
   selector:
     matchLabels:
       app: mysql
