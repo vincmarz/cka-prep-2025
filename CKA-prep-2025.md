@@ -2,7 +2,7 @@
 **Nota:** _per il setup dell'esame, eseguire cka-setup.sh._
 _Il nome del namespace del singolo task è indicato tra parentesi_ 
 
-### 1. HPA Configuration (hpa-ns)
+### 1. HPA Configuration (#hpa-ns)
 **Obiettivo:**
 
 Creare un HPA per scalare automaticamente un deployment in base all'utilizzo della CPU.
@@ -2339,7 +2339,4 @@ kubectl get myapp -n crd-ns
 
 [vai a inizio pagina](#cka-prep-2025)
 
-[1.HPA configuration](#1.HPA Configuration (hpa-ns))
-
-
-
+[1.HPA configuration]<a id='hpa-ns'a>
