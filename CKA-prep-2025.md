@@ -365,7 +365,7 @@ spec:
             - wp
         topologyKey: "kubernetes.io/hostname"
 ```
-Scalare prima a zero e poi a 3 il deployment:
+Scalare il deployment prima a zero e poi a 3:
 ```
 k -n quota-ns scale deployment wordpress --replicas=0
 k -n quota-ns scale deployment wordpress --replicas=3
@@ -386,7 +386,7 @@ spec:
             -  mysql
         topologyKey: "kubernetes.io/hostname"  
 ```
-Scalare prima a zero e poi a 3 il deployment:
+Scalare il deployment prima a zero e poi a 3:
 ```
 k -n quota-ns scale deployment mysql --replicas=0
 k -n quota-ns scale deployment mysql --replicas=3
@@ -406,10 +406,18 @@ limits.memory    512Mi  1Gi
 requests.cpu     250m   500m
 requests.memory  256Mi  512Mi
 
-kubectl get pods -n quota-ns
-NAME                         READY   STATUS    RESTARTS   AGE
-mysql-57584b8d9c-ln6x6       1/1     Running   0          11m
-wordpress-5784f757f5-h8ghm   1/1     Running   0          8m28s
+
+Verificare l'allocazione dei pod:
+
+```
+k -n quota-ns get po -o wide
+NAME                        READY   STATUS    RESTARTS   AGE     IP             NODE          NOMINATED NODE   READINESS GATES
+mysql-64cb4856c8-7657n      1/1     Running   0          3m27s   10.10.195.5    worker1-k8s   <none>           <none>
+mysql-64cb4856c8-7pc88      1/1     Running   0          3m27s   10.10.7.235    worker2-k8s   <none>           <none>
+mysql-64cb4856c8-xv586      1/1     Running   0          3m27s   10.10.159.37   worker3-k8s   <none>           <none>
+wordpress-64c6598f7-gtx6k   1/1     Running   0          8m38s   10.10.7.214    worker2-k8s   <none>           <none>
+wordpress-64c6598f7-kkfpt   1/1     Running   0          8m38s   10.10.195.50   worker1-k8s   <none>           <none>
+wordpress-64c6598f7-m7g8p   1/1     Running   0          8m38s   10.10.159.22   worker3-k8s   <none>           <none>
 ```
 
 ### 7. PVC + Pod (pvc-ns)
