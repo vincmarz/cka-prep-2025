@@ -342,6 +342,14 @@ Assicurarsi che l'applicazione, in replica 3, abbia un pod di replica su ogni no
 k apply -f 06.quota-ns/quota.yaml
 ```
 **Risoluzione:**
+
+Editare il deployment:
+```
+
+```
+
+
+
 ```
 kubectl -n quota-ns create quota wordpress-quota --hard=requests.cpu=500m,requests.memory=512Mi,limits.cpu=1,limits.memory=1Gi
 
