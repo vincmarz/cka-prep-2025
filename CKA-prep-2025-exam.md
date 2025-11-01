@@ -47,7 +47,7 @@ Creazione di un ingress Nginx. Nel namespace è presente il pod web esposto con 
 **Obiettivo:**
 
 Creazione di una resource quota per un WordPress impostando la request CPU a 500 millicore, la request memory a 512 MB, 1 CPU come limit e 1 GB come limit memory.  
-Creare una replica dell'applicazione per ogni nodo del cluster.
+Assicurarsi che l'applicazione, in replica 3, abbia un pod di replica su ogni nodo.
 
 ### 7. PVC + Pod (pvc-ns)
 **Obiettivo:**
