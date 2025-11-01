@@ -561,8 +561,8 @@ main running
 ### 9. HTTP Gateway (gateway-ns)
 **Obiettivo:**
 
-Creazione di un HTTPGateway e associazione ad un pod. Nel namespace gateway-ns è presente un deployment nginx-welcome, un service e una configmap. Esporre l'applicazione
-utilizzando un gateway sulla porta 80 e creare un HTTPGateway. Utilizzare l'hostname mygateway.
+Creazione di un HTTPGateway e associazione ad un pod. Nel namespace gateway-ns è presente un deployment nginx-welcome, un service, una configmap e un ingress TLS. Esporre l'applicazione
+utilizzando un gateway sulla porta 80 e creare un HTTPGateway. Utilizzare l'hostname mygateway e per la configurazione del TLS utilizzare la stessa dell'ingress.
 
 **Prequisito:** NGINX Gateway Fabric installato sul cluster Kubernetes.
 
@@ -610,13 +610,26 @@ spec:
     port: 80
     allowedRoutes:
       namespaces:
-      	from: Same	
+      	from: Same
+    hostname: mygateway.local
+  - name: https
+    protocol: HTTPS
+    port: 443
+    allowedroutes:
+      namespaces:
+        from: Same 
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - name: ingress-web
+        kind: Secret
+   
 ```
 Creare il Gateway:
 ```
 k apply -f 09.gateway.yaml
 ```
-Creare un HTTPRoute con una route su / per l'applicazione http-echo:
+Creare un HTTPRoute con una route su / per l'applicazione Nginx:
 
 09.httproute.yaml
 ```
@@ -628,7 +641,7 @@ spec:
   parentRefs:
   - name: my-gateway
   hostnames:
-  - "mygateway"
+  - "mygateway.local"
   rules:
   - matches:
     - path:
@@ -637,6 +650,7 @@ spec:
     backendRefs:
     - name: nginx-welcome
       port: 80
+
 ```
 Creare l'HTTPRoute:
 ```
@@ -659,9 +673,9 @@ deployment.apps/nginx-gateway   1/1     1            1           6d
 NAME                                      DESIRED   CURRENT   READY   AGE
 replicaset.apps/nginx-gateway-96f76cdcf   1         1         1       6d
 ```
-Dopo aver aggiunto l'hostname mygateway al file /etc/hosts:
+Dopo aver aggiunto l'hostname mygateway.local al file /etc/hosts:
 ```
-curl mygateway:30525
+curl -kL https://mygateway.local:30683
 <html>
   <head><title>Welcome</title></head>
   <body>
