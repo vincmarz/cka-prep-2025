@@ -218,13 +218,13 @@ k apply -f pod-pc.yaml
 ```
 Check:
 ```
-k -n priority-ns get po  --sort-by=.spec.priority 
-NAME       READY   STATUS    RESTARTS   AGE
-sleeper    1/1     Running   0          19m3s
-web        1/1     Running   0          19m3s
-priority   1/1     Running   0          16m
+k -n priority-ns get po --no-headers --sort-by=.spec.priority | tac
+web            1/1   Running   0     12m
+sleeper        1/1   Running   0     12m
+priority-pod   1/1   Running   0     4m56s
 ```
-L'ordine ascendente mostra il pod priority in fondo alla lista.
+
+L'ordine decrescente mostra il pod priority in fondo alla lista.
 
 ### 5. Ingress Setup (ingress-ns)
 **Obiettivo:**
