@@ -405,7 +405,7 @@ limits.cpu       500m   1
 limits.memory    512Mi  1Gi
 requests.cpu     250m   500m
 requests.memory  256Mi  512Mi
-
+```
 
 Verificare l'allocazione dei pod:
 
