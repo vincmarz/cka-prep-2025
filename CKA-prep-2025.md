@@ -39,6 +39,7 @@ Eseguirlo in un terminale separato in modo che la generazione del carico continu
 ```
 kubectl -n hpa-ns run -it load-generator --rm --image=busybox:1.28 --restart=Never -- /bin/sh -c "while sleep 0.01; do wget -q -O- http://hpa-app; done"
 ```
+<a name="cri-o"></a>
 ### 2. Installazione CRI-O (su nodo Linux Ubuntu 22.04)
 **Obiettivo:**
 
@@ -93,7 +94,7 @@ Verifica:
 ```
 sudo sysctl --system
 ```
-
+<a name="argocd-ns"></a>
 ### 3. ArgoCD via Helm 3 (argocd-ns)
 **Obiettivo:**
 
@@ -190,7 +191,7 @@ NAME                                         STATUS     COMPLETIONS   DURATION  
 job.batch/argo-cd-argocd-redis-secret-init   Complete   1/1           14s        30s
 
 ```
-
+<a name="priority-ns"></a>
 ### 4. PriorityClass (priority-ns)
 **Obiettivo:**
 
@@ -226,6 +227,7 @@ priority-pod   1/1   Running   0     4m56s
 
 L'ordine decrescente mostra il pod priority in fondo alla lista.
 
+<a name="ingress-ns"></a>
 ### 5. Ingress Setup (ingress-ns)
 **Obiettivo:**
 
@@ -330,7 +332,7 @@ Commercial support is available at
 </body>
 </html>
 ```
-
+<a name="quota-ns"></a>
 ### 6. Resource Quota + WordPress (quota-ns)
 **Obiettivo:**
 
@@ -419,7 +421,7 @@ wordpress-64c6598f7-gtx6k   1/1     Running   0          8m38s   10.10.7.214    
 wordpress-64c6598f7-kkfpt   1/1     Running   0          8m38s   10.10.195.50   worker1-k8s   <none>           <none>
 wordpress-64c6598f7-m7g8p   1/1     Running   0          8m38s   10.10.159.22   worker3-k8s   <none>           <none>
 ```
-
+<a name="pvc-ns"></a>
 ### 7. PVC + Pod (pvc-ns)
 **Obiettivo:**
 
@@ -492,6 +494,7 @@ Verifica:
 kubectl get pvc -n pvc-ns
 kubectl get pod pvc-pod -n pvc-ns
 ```
+<a name="sidecar-ns"></a>
 ### 8. Sidecar Container (sidecar-ns)
 **Obiettivo:**
 
@@ -557,7 +560,7 @@ main running
 main running
 [...]
 ```
-
+<a name="gateway-ns"></a>
 ### 9. HTTP Gateway (gateway-ns)
 **Obiettivo:**
 
@@ -704,7 +707,7 @@ user	0m0,024s
 sys	0m0,020s
 ```
 
-
+<a name="cert-ns"></a>
 ### 10. Cert-Manager + Self-Signed Cert (cert-ns)
 **Obiettivo:**
 
@@ -1106,7 +1109,7 @@ Certificate:
         49:fc:5b:82
 
 ```
-
+<a name="calico"></a>
 ### 11. Calico Network Plugin ###
 
 **Obiettivo:**
@@ -1132,7 +1135,7 @@ Verifica dei componenti di Calico:
 ```
 watch kubectl get tigerastatus
 ```
-
+<a name="rbac-ns"></a>
 ### 12. RBAC (rbac-ns)
 **Obiettivo:**
 
@@ -1189,7 +1192,7 @@ Check:
 k -n rbac-ns auth can-i get po --as=system:serviceaccount:rbac-ns:pod-reader
 yes
 ```
-
+<a name="scheduling-ns"></a>
 ### 13. Node Affinity + Tolerations (scheduling-ns)
 **Obiettivo:**
 
@@ -1246,7 +1249,7 @@ Nota: per poter continuare gli esercizi rimuovere il taint sui nodi del cluster:
 ```
 k taint node worker1-k8s worker2-k8s worker3-k8s key1=value1:NoSchedule-
 ```
-
+<a name="config-ns"></a>
 ### 14. ConfigMap & Secret (config-ns)
 **Obiettivo:** 
 
@@ -1319,6 +1322,7 @@ k -n config-ns exec -it pod/config-secret-pod -- cat /etc/config/myconfig.txt
 Questo è il contenuto della config
 
 ```
+<a name="debug-ns"></a>
 ### 15 . Troubleshooting (debug-ns)
 **Obiettivo:**
 
@@ -1433,6 +1437,7 @@ spec:
 [...]
 ```
 
+<a name="ds-ns"></a>
 ### 16. DaemonSet (ds-ns)
 **Obiettivo:**
 
@@ -1494,7 +1499,7 @@ busybox-agent-zklpm   1/1     Running   0          37m   10.10.199.44   master-k
 NAME                           DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE   CONTAINERS   IMAGES    SELECTOR
 daemonset.apps/busybox-agent   3         3         3       3            3           <none>          38m   busybox      busybox   app=busybox-agent
 ```
-
+<a name="netpol-ns"></a>
 ### 17. NetworkPolicy (netpol-ns)
 **Obiettivo:** 
 
@@ -1606,7 +1611,7 @@ k -n netpol-ns exec -it pod/app -- bin/sh
 / # curl http://web
 curl: (6) Could not resolve host: web
 ```
-
+<a name="failure-ns"></a>
 ### 18. Simulazione Node Failure (failure-ns)
 **Obiettivo:**
 
@@ -1636,7 +1641,7 @@ Per ripristinare il nodo occorre fare l'uncordon e rimuovere il taint:
 k uncordon worker3-k8s
 k taint nodes worker3-k8s key=value:NoSchedule-
 ```
-
+<a name="storage-ns"></a>
 ### 19. PersistentVolume & PersistentVolumeClaim (storage-ns)
 **Obiettivo:**
 
@@ -1737,7 +1742,7 @@ Verifica:
 k -n storage-ns describe po  pv-pod | grep mnt -A1
       /mnt from local (rw)
 ```
-
+<a name="stateful-ns"></a>
 ### 20. StatefulSet (stateful-ns)
 **Obiettivo:**
 
@@ -1817,7 +1822,7 @@ persistentvolumeclaim/www-web-0   Bound    pvc-4807804b-d327-4da0-b642-7ba859adf
 persistentvolumeclaim/www-web-1   Bound    pvc-89abd00b-434a-46a7-b2f4-cd8ae6579d82   1Gi        RWO            local-path     <unset>                 17m
 persistentvolumeclaim/www-web-2   Bound    pvc-26e5bd65-edb1-4b85-bdf9-8de8cf6a16cd   1Gi        RWO            local-path     <unset>                 17m
 ```
-
+<a name="batch-ns"></a>
 ### 21. Job batch (batch-ns)
 **Obiettivo:**
 
@@ -1871,8 +1876,8 @@ job.batch/hello   Complete   1/1           7s         6m24s
 k -n batch-ns logs pod/hello-krgsf
 Hello from Job
 ```
-
-### 22. Ingress con TLS (ingress-ns)
+<a name="ingress-tls-ns"></a>
+### 22. Ingress con TLS (ingress-tls-ns)
 **Obiettivo:**
 
 Configurare un Ingress con TLS (self-signed) che instrada verso un service Nginx.
@@ -1883,7 +1888,7 @@ con il tool cfssl e configurate l'ingress TLS con l'host web.local.
 
 Verifica del namespace:
 ```
-k -n ingress-ns get all,ing
+k -n ingress-tls-ns get all,ing
 NAME                       READY   STATUS    RESTARTS       AGE
 pod/web-78df96f968-dtpn9   1/1     Running   16 (28m ago)   22d
 
@@ -2064,11 +2069,11 @@ Certificate:
 
 Creare il secret TLS:
 ```
-k -n ingress-ns create secret tls ingress-web --cert=ingress.pem --key=ingress-key.pem
+k -n ingress-tls-ns create secret tls ingress-web --cert=ingress.pem --key=ingress-key.pem
 ```
 Modificare l'ingress web-ingress aggiungendo il secret TLS:
 ```
-k -n ingress-ns edit ingress web-ingress
+k -n ingress-tls-ns edit ingress web-ingress
 [...]
 spec:
   ingressClassName: nginx
@@ -2092,7 +2097,7 @@ spec:
 ```
 Verifica del'ingress in ascolto sulla 443: 
 ```
-k -n ingress-ns get ingress web-ingress
+k -n ingress-tls-ns get ingress web-ingress
 NAME          CLASS   HOSTS       ADDRESS           PORTS     AGE
 web-ingress   nginx   web.local   192.168.122.222   80, 443   22d
 ```
@@ -2125,7 +2130,7 @@ Commercial support is available at
 </body>
 </html>
 ```
-
+<a name="helm-ns"></a>
 ### 23. Deploy con Helm (helm-ns)
 **Obiettivo:**
 
@@ -2191,7 +2196,7 @@ NAME                                        DESIRED   CURRENT   READY   AGE
 replicaset.apps/my-nginx-nginx-5454dc9598   2         2         2       52s
 
 ```
-
+<a name="multi-ns"></a>
 ### 24. Multi-container Pod (multi-ns)
 **Obiettivo:**
 
@@ -2267,7 +2272,7 @@ Sat Oct  4 07:31:11 UTC 2025
 Sat Oct  4 07:31:17 UTC 2025
 [...]
 ```
-
+<a name="crd-ns"></a>
 ### 25. Custom Resource Definition (CRD) & Custom Resource (cdr-ns) 
 **Obiettivo:**
 
@@ -2339,4 +2344,54 @@ kubectl get myapp -n crd-ns
 
 [vai a inizio pagina](#cka-prep-2025)
 
-[1.HPA configuration](#hpa-ns)
+[1. HPA configuration](#hpa-ns)
+
+[2. Installazione CRI-O](#cri-o) 
+
+[3. ArgoCD via Helm 3](#argocd-ns)
+
+[4. PriorityClass](#priority-ns)
+
+[5. Ingress Setup](#ingress-ns)
+
+[6. Resource Quota + WordPress](#quota-ns)
+ 
+[7. PVC + Pod](#pvc-ns)
+
+[8. Sidecar Container](#sidecar-ns)
+
+[9. HTTP Gateway](#gateway-ns)
+
+[10. Cert-Manager + Self-Signed Cert](#cert-ns)
+
+[11. Calico Network Plugin](#calico) 
+
+[12. RBAC](#rbac-ns)
+
+[13. Node Affinity + Tolerations](#scheduling-ns)
+
+[14. ConfigMap & Secret](#config-ns)
+
+[15 . Troubleshooting](#debug-ns)
+
+[16. DaemonSet](#ds-ns)
+
+[17. NetworkPolicy](#netpol-ns)
+
+[18. Simulazione Node Failure](#failure-ns)
+
+[19. PersistentVolume & PersistentVolumeClaim](#storage-ns)
+
+[20. StatefulSet](#stateful-ns)
+
+[21. Job batch](#batch-ns)
+
+[22. Ingress con TLS](#ingress-ns)
+
+[23. Deploy con Helm](#helm-ns)
+
+[24. Multi-container Pod](#multi-ns)
+
+[25. Custom Resource Definition (CRD) & Custom Resource](#cdr-ns)
+
+  
