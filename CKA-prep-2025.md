@@ -343,12 +343,55 @@ k apply -f 06.quota-ns/quota.yaml
 ```
 **Risoluzione:**
 
-Editare il deployment:
+Ci sono due deployment nel namespace:
+```
+k -n quota-ns get deploy
+NAME        READY   UP-TO-DATE   AVAILABLE   AGE
+mysql       3/3     3            3           19d
+wordpress   3/3     3            3           19d
+```
+Editare il deployment wordpress:
+```
+[...]
+spec:
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - wp
+        topologyKey: "kubernetes.io/hostname"
+```
+Scalare prima a zero e poi a 3 il deployment:
+```
+k -n quota-ns scale deployment wordpress --replicas=0
+k -n quota-ns scale deployment wordpress --replicas=3
 ```
 
+Editare il deployment mysql:
 ```
-
-
+[...]
+spec:
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app
+            operator: In
+            values:
+            -  mysql
+        topologyKey: "kubernetes.io/hostname"  
+```
+Scalare prima a zero e poi a 3 il deployment:
+```
+k -n quota-ns scale deployment mysql --replicas=0
+k -n quota-ns scale deployment mysql --replicas=3
+```
+Impostare i limiti e le requests:
 
 ```
 kubectl -n quota-ns create quota wordpress-quota --hard=requests.cpu=500m,requests.memory=512Mi,limits.cpu=1,limits.memory=1Gi
