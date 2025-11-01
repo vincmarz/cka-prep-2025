@@ -334,7 +334,8 @@ Commercial support is available at
 ### 6. Resource Quota + WordPress (quota-ns)
 **Obiettivo:**
 
-Creazione di una resource quota per un WordPress impostando la request CPU a 500 millicore, la request memory a 512 MB, 1 CPU come limit e 1 GB come limit memory.  
+Creare di una resource quota per un WordPress impostando la request CPU a 500 millicore, la request memory a 512 MB, 1 CPU come limit e 1 GB come limit memory.
+Assicurarsi che l'applicazione, in replica 3, abbia un pod di replica su ogni nodo.
 
 **Preparazione:**
 ```
