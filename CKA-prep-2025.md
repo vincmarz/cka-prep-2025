@@ -1,6 +1,58 @@
 ## CKA Prep 2025 
 **Nota:** _per il setup dell'esame, eseguire cka-setup.sh._
 _Il nome del namespace del singolo task è indicato tra parentesi_ 
+
+[1. HPA configuration](#hpa-ns)
+
+[2. Installazione CRI-O](#cri-o)
+
+[3. ArgoCD via Helm 3](#argocd-ns)
+
+[4. PriorityClass](#priority-ns)
+
+[5. Ingress Setup](#ingress-ns)
+
+[6. Resource Quota + WordPress](#quota-ns)
+
+[7. PVC + Pod](#pvc-ns)
+
+[8. Sidecar Container](#sidecar-ns)
+
+[9. HTTP Gateway](#gateway-ns)
+
+[10. Cert-Manager + Self-Signed Cert](#cert-ns)
+
+[11. Calico Network Plugin](#calico)
+
+[12. RBAC](#rbac-ns)
+
+[13. Node Affinity + Tolerations](#scheduling-ns)
+
+[14. ConfigMap & Secret](#config-ns)
+
+[15 . Troubleshooting](#debug-ns)
+
+[16. DaemonSet](#ds-ns)
+
+[17. NetworkPolicy](#netpol-ns)
+
+[18. Simulazione Node Failure](#failure-ns)
+
+[19. PersistentVolume & PersistentVolumeClaim](#storage-ns)
+
+[20. StatefulSet](#stateful-ns)
+
+[21. Job batch](#batch-ns)
+
+[22. Ingress con TLS](#ingress-ns)
+
+[23. Deploy con Helm](#helm-ns)
+
+[24. Multi-container Pod](#multi-ns)
+
+[25. Custom Resource Definition](#crd-ns)
+
+
 <a name="hpa-ns"></a>
 ### 1. HPA Configuration (hpa-ns)
 **Obiettivo:**
