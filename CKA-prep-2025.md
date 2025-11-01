@@ -2273,7 +2273,7 @@ Sat Oct  4 07:31:17 UTC 2025
 [...]
 ```
 <a name="crd-ns"></a>
-### 25. Custom Resource Definition (CRD) & Custom Resource (cdr-ns) 
+### 25. Custom Resource Definition (cdr-ns) 
 **Obiettivo:**
 
 Creare una CRD chiamata MyApp e un oggetto custom di tipo MyApp.
