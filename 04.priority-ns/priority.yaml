@@ -18,6 +18,15 @@
 #    image: busybox
 #    command: ["sleep", "3600"]
 ---
+apiVersion: scheduling.k8s.io/v1
+description: Priority test
+kind: PriorityClass
+metadata:
+  creationTimestamp: null
+  name: priority-test
+preemptionPolicy: PreemptLowerPriority
+value: 0
+---
 apiVersion: v1
 kind: Pod
 metadata:
@@ -27,6 +36,7 @@ metadata:
   name: web
   namespace: priority-ns
 spec:
+  priorityClassName: priority-test
   containers:
   - image: nginx
     name: web
@@ -44,6 +54,7 @@ metadata:
   name: sleeper
   namespace: priority-ns
 spec:
+  priorityClassName: priority-test 
   containers:
   - args:
     - sh
@@ -54,3 +65,4 @@ spec:
     resources: {}
   dnsPolicy: ClusterFirst
   restartPolicy: Always
+---
