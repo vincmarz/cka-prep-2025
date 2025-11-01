@@ -204,13 +204,13 @@ di priority l'elenco dei pod e salvarlo nel file 4.priority.list.
 Creare la priorityclass:
 
 ```
-k create priorityclass high-priority --value=100000 --global-default=false --description="High priority pods"
+k create priorityclass my-priority --value=-1 --global-default=false --description="My priority pods"
 
 k -n priority-ns run priority-pod --image=busybox --dry-run=client -o yaml  -- sh -c 'sleep 3600'  > 4.pod.yaml
 ```
 Editare 4.pod.yaml e aggiungere dopo .spec:
 ```
-priorityClassName: high-priority
+priorityClassName: my-priority
 ```
 Creare il pod:
 ```
