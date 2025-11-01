@@ -2339,5 +2339,7 @@ kubectl get myapp -n crd-ns
 
 [vai a inizio pagina](#cka-prep-2025)
 
+[1.HPA configuration](#1.HPA Configuration (hpa-ns))
+
 
 
