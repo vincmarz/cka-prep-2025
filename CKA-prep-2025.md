@@ -2438,7 +2438,7 @@ kubectl get myapp -n crd-ns
 
 [21. Job batch](#batch-ns)
 
-[22. Ingress con TLS](#ingress-ns)
+[22. Ingress con TLS](#ingress-tls-ns)
 
 [23. Deploy con Helm](#helm-ns)
 
