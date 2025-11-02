@@ -150,7 +150,7 @@ Utilizzare una storageclass locale.
 
 Creare un Job che esegue uno script bash che stampa "Hello from Job" attende 2 secondi e poi termina. Il job deve avere 3 tentativi di esecuzione.
 
-### 22. Ingress con TLS (ingress-ns)
+### 22. Ingress con TLS (ingress-tls-ns)
 **Obiettivo:**
 
 Configurare un Ingress con TLS (self-signed) che instrada verso un service Nginx.
