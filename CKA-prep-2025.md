@@ -65,25 +65,51 @@ stabilizationWindowSecond per lo scaleDown a 30 secondi.
 
 Creare un horizontalpodautoscalers hpa-app:
 ```
-kubectl autoscale deployment hpa-app --cpu-percent=50 --min=1 --max=5
+kubectl autoscale deployment hpa-app --cpu-percent=50 --min=1 --max=5 --dyr-run=client -o yaml > 1.hpa.yaml
 ```
 
-Editare l'HAP per aggiungere il parametro:
+Editare il file 1.hpa.yaml per aggiornare la versione e aggiungere i parametri richiesti:
 ```
-k -n hpa-ns edit hpa hpa-app 
-[...]
+apiVersion: autoscaling/v2                            # CHANGE
+kind: HorizontalPodAutoscaler
+metadata:
+  creationTimestamp: null
+  name: hpa-app
 spec:
-  behavior:                               # ADD
-    scaleDown:                            # ADD
-      stabilizationWindowSeconds: 30      # ADD
-[...]
+  behavior:                                           # ADD
+    scaleDown:                                        # ADD
+      stabilizationWindowSeconds: 30                  # ADD
+  maxReplicas: 5
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: hpa-app
+  targetCPUUtilizationPercentage: 50                  # DELETE
+  metrics:                                            # ADD
+   - type: Resource                                   # ADD
+     resource:                                        # ADD
+       name: cpu                                      # ADD
+       target:                                        # ADD
+         type: Utilization                            # ADD
+         averageUtilization: 50                       # ADD
+status:
+  currentReplicas: 0
+  desiredReplicas: 0
+
 ```
+Creare l'HPA:
+
+```
+k apply -f 1.hpa.yaml
+```
+
 Verifica:
 ```
 kubectl get hpa -n hpa-ns
 kubectl describe hpa nginx-hpa -n hpa-ns
 ```
-Possiamo aumentare il carico per osservare come reagisce l'autoscaler all'aumento del workload. 
+Nota: Possiamo aumentare il carico per osservare come reagisce l'autoscaler all'aumento del workload. 
 Per fare ciò, avviare un Pod diverso che funga da client.
 Il container all'interno del Pod client viene eseguito in un ciclo infinito, inviando query al servizio Apache.
 Eseguirlo in un terminale separato in modo che la generazione del carico continui.
