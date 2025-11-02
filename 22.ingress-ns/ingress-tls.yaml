@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: web
-  namespace: ingress-ns
+  namespace: ingress-tls-ns
 spec:
   ports:
   - port: 80
@@ -15,7 +15,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: web
-  namespace: ingress-ns
+  namespace: ingress-tls-ns
 spec:
   replicas: 1
   selector:
@@ -36,7 +36,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: web-ingress 
-  namespace: ingress-ns
+  namespace: ingress-tls-ns
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
