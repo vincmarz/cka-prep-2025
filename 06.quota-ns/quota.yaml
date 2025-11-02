@@ -74,7 +74,7 @@ metadata:
   name: wordpress
   namespace: quota-ns
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: wp

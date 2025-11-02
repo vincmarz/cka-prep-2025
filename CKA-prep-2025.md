@@ -297,10 +297,7 @@ k apply -f pod-pc.yaml
 ```
 Check:
 ```
-k -n priority-ns get po --no-headers --sort-by=.spec.priority | tac > 4.priority.list
-web            1/1   Running   0     12m
-sleeper        1/1   Running   0     12m
-priority-pod   1/1   Running   0     4m56s
+k -n priority-ns get po --no-headers --sort-by=.spec.priority | cut -d ' ' -f1 | tac > 4.priority.list
 ```
 
 L'ordine decrescente mostra il pod priority in fondo alla lista.
@@ -309,7 +306,7 @@ L'ordine decrescente mostra il pod priority in fondo alla lista.
 ### 5. Ingress Setup (ingress-ns)
 **Obiettivo:**
 
-Creazione di un ingress Nginx. Nel namespace è presente il pod web esposto con il service web: creare un Ingress Nginx con host web.local.
+Creazione di un ingress Nginx. Nel namespace è presente il pod web esposto con il service web: creare un Ingress Nginx, denominato web-ingress, con host web-frontend.local.
 
 **Prerequisito:** controller Nginx Ingress installato.
 
@@ -333,7 +330,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: web.local
+  - host: web-frontend.local
     http:
       paths:
       - path: /
@@ -353,9 +350,9 @@ Verifica:
 kubectl get ingress -n ingress-ns
 ```
 
-Aggiungere web.local a /etc/hosts
+Aggiungere web-frontend.local a /etc/hosts
 
-Verifica (valida con plugin CNI Calico) :
+Verifica:
 ```
 k -n ingress-ns get po -owide
 NAME                   READY   STATUS    RESTARTS   AGE    IP           NODE          NOMINATED NODE   READINESS GATES
@@ -365,7 +362,7 @@ ping worker2-k8s
 PING worker2-k8s (192.168.122.176) 56(84) bytes of data.
 
 /etc/hosts
-192.168.122.176 worker2-k8s web.local
+192.168.122.176 worker2-k8s web-frontend.local
 ```
 Verificare su quale porta NodePort risulta associata la porta 80 dell'ingress controller:
 ```
@@ -385,7 +382,7 @@ replicaset.apps/ingress-nginx-controller-58954d6d98   1         1         1     
 ```
 Verifica con curl:
 ```
-curl http://web.local:30861
+curl http://web-frontend.local:30861
 <!DOCTYPE html>
 <html>
 <head>
@@ -417,10 +414,6 @@ Commercial support is available at
 Creare di una resource quota per un WordPress impostando la request CPU a 500 millicore, la request memory a 512 MB, 1 CPU come limit e 1 GB come limit memory.
 Assicurarsi che l'applicazione, in replica 3, abbia un pod di replica su ogni nodo.
 
-**Preparazione:**
-```
-k apply -f 06.quota-ns/quota.yaml
-```
 **Risoluzione:**
 
 Ci sono due deployment nel namespace:
@@ -471,25 +464,88 @@ Scalare il deployment prima a zero e poi a 3:
 k -n quota-ns scale deployment mysql --replicas=0
 k -n quota-ns scale deployment mysql --replicas=3
 ```
+Verificare le risorse assegnate ai pods:
+
+```
+k -n quota-ns describe deployments.apps wordpress
+[...]
+  Containers:
+   wordpress:
+    Image:      wordpress
+    Port:       <none>
+    Host Port:  <none>
+    Limits:
+      cpu:     500m
+      memory:  512Mi
+    Requests:
+      cpu:     250m
+      memory:  256Mi
+[...]
+```
+**Nota:** per le impostazioni delle quota si deve tenere conto anche del deployment mysql.
+
+Il deployment mysql non ha request e limit impostatati: occorre quindi definire i seguenti valori:
+
+limits.cpu: 250m 
+limits.memory: 256Mi
+requests.cpu: 125m
+requests.memory: 256Mi
+
+Considerando che abbiamo due deployment in replica 3 avremo:
+
+WordPress:
+- Limits:
+- CPU: 3 x 500 = 1500m
+- Memory: 3 x 512 = 1536Mi
+
+- Requests:
+- CPU: 3 x 250 = 750m
+- Memory: 3 x 256 = 768Mi
+
+MySQL:
+- Limits: 
+- CPU: 3 x 500 = 1500m
+- Memory: 3 x 512 = 768Mi
+
+- Requests:
+- CPU: 3 x 250 = 750Mi
+- Memory: 3 x 256 = 768Mi
+
+Totale (WordPress + MySQL) :
+- Limits:
+- CPU: 1500m + 1500m = 3
+- Memory: 1536Mi + 1536Mi = 3Gi 
+
+- Requests:
+- CPU: 750m + 750Mi = 1500m
+- Memory: 768Mi + 768Mi = 1536Mi
+
+
 Impostare i limiti e le requests:
 
 ```
-kubectl -n quota-ns create quota wordpress-quota --hard=requests.cpu=500m,requests.memory=512Mi,limits.cpu=1,limits.memory=1Gi
+kubectl -n quota-ns create quota wordpress-quota --hard=requests.cpu=2,requests.memory=2Gi,limits.cpu=3,limits.memory=4Gi
 
 kubectl describe quota wordpress-quota -n quota-ns
 Name:            wordpress-quota
 Namespace:       quota-ns
-Resource         Used   Hard
---------         ----   ----
-limits.cpu       500m   1
-limits.memory    512Mi  1Gi
-requests.cpu     250m   500m
-requests.memory  256Mi  512Mi
+Resource         Used    Hard
+--------         ----    ----
+limits.cpu       3       3
+limits.memory    3Gi     4Gi
+requests.cpu     1500m   2
+requests.memory  1536Mi  2Gi
 ```
 
-Verificare l'allocazione dei pod:
+Verificare l'allocazione dei podi, dopo uno scale down e uno scale up dei due deployment:
 
 ```
+k -n quota-ns scale deploy wordpress --replicas=0
+k -n quota-ns scale deploy mysql --replicas=0
+
+k -n quota-ns scale deploy wordpress --replicas=3
+k -n quota-ns scale deploy mysql --replicas=3
+
 k -n quota-ns get po -o wide
 NAME                        READY   STATUS    RESTARTS   AGE     IP             NODE          NOMINATED NODE   READINESS GATES
 mysql-64cb4856c8-7657n      1/1     Running   0          3m27s   10.10.195.5    worker1-k8s   <none>           <none>

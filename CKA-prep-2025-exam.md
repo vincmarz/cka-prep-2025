@@ -39,7 +39,7 @@ Infine salvare in ordine decrescente di priority l'elenco dei pod e salvarlo nel
 ### 5. Ingress Setup (ingress-ns)
 **Obiettivo:**
 
-Creazione di un ingress Nginx. Nel namespace è presente il pod web esposto con il service web: creare un Ingress Nginx con host web.local.
+Creazione di un ingress Nginx. Nel namespace è presente il pod web esposto con il service web: creare un Ingress Nginx, denominato web-ingress, con host web-frontend.local.
 
 **Prerequisito:** controller Nginx Ingress installato.
 
