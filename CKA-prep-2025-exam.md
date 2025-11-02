@@ -14,9 +14,9 @@ stabilizationWindowSecond per lo scaleDown a 30 secondi.
 
 Installare CRI-O su un nodo. Installare con dpkg il package cri-dockerd_0.3.20.3-0.ubuntu-jammy_amd64.deb disponibile ./02.crio-ns. Avviare e abilitare il servizio.          
 Dopo l'avvio, configurare i seguenti parametri a livello di sistema operativo:
-net.bridge.bridge-nf-call-iptables  = 1
-net.ipv4.ip_forward                 = 1
-net.bridge.bridge-nf-call-ip6tables = 1
+- net.bridge.bridge-nf-call-iptables  = 1
+- net.ipv4.ip_forward                 = 1
+- net.bridge.bridge-nf-call-ip6tables = 1
 
 Nota:
 https://github.com/Mirantis/cri-dockerd/releases/download/v0.3.20/cri-dockerd_0.3.20.3-0.ubuntu-jammy_amd64.deb
