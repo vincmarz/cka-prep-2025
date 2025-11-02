@@ -63,7 +63,7 @@ Creazione di un side-container in un pod. Creare un pod sidecar-pod con due cont
 ### 9. HTTP Gateway (gateway-ns)
 **Obiettivo:**
 
-Creazione di un HTTPGateway e associazione ad un pod. Nel namespace gateway-ns è presente un deployment nginx-welcome, un service, una configmap e un ingress. Esporre l'applicazione
+Creazione di un HTTPGateway e associazione ad un pod. Nel namespace gateway-ns è presente un deployment nginx-welcome, un service, una configmap e un ingress TLS. Esporre l'applicazione
 utilizzando un gateway sulla porta 80 e creare un HTTPGateway. Utilizzare l'hostname mygateway e le stesse configurazioni TLS dell'ingress.
 
 **Prequisito:** NGINX Gateway Fabric installato sul cluster Kubernetes.
