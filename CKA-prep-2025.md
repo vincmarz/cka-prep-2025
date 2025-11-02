@@ -96,10 +96,10 @@ kubectl -n hpa-ns run -it load-generator --rm --image=busybox:1.28 --restart=Nev
 **Obiettivo:**
 
 Installare CRI-O su un nodo Ubuntu 22. Installare con dpkg il package cri-dockerd_0.3.20.3-0.ubuntu-jammy_amd64.deb disponibile ./02.crio-ns. Avviare e abilitare il servizio. 
-Dopo l'avviao, configurare i seguenti parametri a livello di sistema operativo: 
-net.bridge.bridge-nf-call-iptables  = 1
-net.ipv4.ip_forward                 = 1
-net.bridge.bridge-nf-call-ip6tables = 1
+Dopo l'avvio, configurare i seguenti parametri a livello di sistema operativo: 
+- net.bridge.bridge-nf-call-iptables  = 1
+- net.ipv4.ip_forward                 = 1
+- net.bridge.bridge-nf-call-ip6tables = 1
 
 Nota:
 Scricare il package da:
