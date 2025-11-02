@@ -271,7 +271,7 @@ k apply -f pod-pc.yaml
 ```
 Check:
 ```
-k -n priority-ns get po --no-headers --sort-by=.spec.priority | tac
+k -n priority-ns get po --no-headers --sort-by=.spec.priority | tac > 4.priority.list
 web            1/1   Running   0     12m
 sleeper        1/1   Running   0     12m
 priority-pod   1/1   Running   0     4m56s
