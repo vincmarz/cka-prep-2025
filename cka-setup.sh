@@ -8,6 +8,7 @@ namespaces=(
   argocd-ns
   priority-ns
   ingress-ns
+  ingress-tls-ns
   quota-ns
   pvc-ns
   sidecar-ns
