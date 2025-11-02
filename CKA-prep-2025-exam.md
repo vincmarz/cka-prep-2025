@@ -154,7 +154,7 @@ Creare un Job che esegue uno script bash che stampa "Hello from Job" attende 2 s
 **Obiettivo:**
 
 Configurare un Ingress con TLS (self-signed) che instrada verso un service Nginx.
-Nel namespace ingress-ns è presente il pod web esposto con un ingress web-ingress. Creare un certificato self-signed 
+Nel namespace ingress-tls-ns è presente il pod web esposto con un ingress web-ingress. Creare un certificato self-signed 
 con il tool cfssl e configurare l'ingress TLS con l'host web.local.
 
 ### 23. Deploy con Helm (helm-ns)
