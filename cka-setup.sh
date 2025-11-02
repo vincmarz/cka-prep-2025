@@ -47,4 +47,5 @@ kubectl apply -f 12.rbac-ns/rbac-pod.yaml
 kubectl apply -f 15.debug-ns/troubleshooting.yaml 
 kubectl apply -f 17.netpol-ns/web-pod.yaml
 kubectl apply -f 17.netpol-ns/app-pod.yaml
+kubectl apply -f 22.ingress-tls-ns
 echo "✅ Creazione del lab completata."
