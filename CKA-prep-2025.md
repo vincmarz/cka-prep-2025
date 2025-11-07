@@ -766,6 +766,14 @@ Creare il Gateway:
 ```
 k apply -f 09.gateway.yaml
 ```
+Verificare il gateway:
+
+```
+k -n gateway-ns get gateway
+NAME        CLASS   ADDRESS   PROGRAMMED   AGE
+mygateway   nginx             True         18m
+
+```
 Creare un HTTPRoute con una route su / per l'applicazione Nginx:
 
 09.httproute.yaml
@@ -793,6 +801,14 @@ Creare l'HTTPRoute:
 ```
 k apply -f 09.httproute.yaml
 ```
+
+Verificare l'HTTPRoute:
+```
+k -n gateway-ns get httproute
+NAME          HOSTNAMES             AGE
+myhttproute   ["mygateway.local"]   6m33s
+```
+
 Check:
 
 Verificare su quale porta è in ascolto il service dell'NGINX Gateway:
