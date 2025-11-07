@@ -2300,7 +2300,7 @@ Commercial support is available at
 ### 23. Deploy con Helm (helm-ns)
 **Obiettivo:**
 
-Installare la versione 2.1.1 di nginx/wiremind con Helm nel namespace helm-ns, impostando replica a 2.
+Installare la versione 2.1.1 di wiremind/nginx con Helm nel namespace helm-ns, impostando replica a 2.
 
 **Risoluzione:**
 
