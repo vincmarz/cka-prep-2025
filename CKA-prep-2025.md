@@ -856,6 +856,22 @@ real	0m0,072s
 user	0m0,024s
 sys	0m0,020s
 ```
+Oppure contattare l'hostname direttamente senza la porta 31431: 
+
+```
+time curl -k https://mygateway.local
+<html>
+  <head><title>Welcome</title></head>
+  <body>
+    <h1>Welcome to Gateway</h1>
+  </body>
+</html>
+
+real	0m0,044s
+user	0m0,020s
+sys	0m0,015s
+```
+
 
 <a name="cert-ns"></a>
 ### 10. Cert-Manager + Self-Signed Cert (cert-ns)
