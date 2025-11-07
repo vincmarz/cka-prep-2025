@@ -160,7 +160,7 @@ con il tool cfssl e configurare l'ingress TLS con l'host web.local.
 ### 23. Deploy con Helm (helm-ns)
 **Obiettivo:**
 
-Installare la versione 2.1.1 di nginx/wiremind con Helm nel namespace helm-ns, impostando replica a 2.
+Installare la versione 2.1.1 di wiremind/nginx con Helm nel namespace helm-ns, impostando replica a 2.
 
 ### 24. Multi-container Pod (multi-ns)
 **Obiettivo:**
