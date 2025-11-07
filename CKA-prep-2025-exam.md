@@ -21,7 +21,6 @@ Dopo l'avvio, configurare i seguenti parametri a livello di sistema operativo:
 Nota:
 https://github.com/Mirantis/cri-dockerd/releases/download/v0.3.20/cri-dockerd_0.3.20.3-0.ubuntu-jammy_amd64.deb
 
-
 ### 3. ArgoCD via Helm 3 (argocd-ns)
 **Obiettivo:**
 
