@@ -32,6 +32,7 @@ namespaces=(
 for ns in "${namespaces[@]}"; do
   echo "➡️ Eliminazione namespace: $ns"
   kubectl delete ns "$ns" --ignore-not-found
+  kubectl delete pv wp-pv local-pv
 done
 
 echo "✅ Cleanup completato."
