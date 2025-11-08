@@ -12,4 +12,4 @@ spec:
   containers:
   - name: crash-container
     image: busybox
-    command: ["false"]
+    command: ["sleep 1d"]
