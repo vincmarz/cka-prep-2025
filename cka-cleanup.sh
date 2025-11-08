@@ -22,6 +22,7 @@ namespaces=(
   stateful-ns
   batch-ns
   ingress-ns
+  ingress-tls-ns
   helm-ns 
   multi-ns 
   crd-ns
