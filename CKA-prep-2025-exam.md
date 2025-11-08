@@ -51,7 +51,7 @@ Assicurarsi che l'applicazione, in replica 3, abbia un pod di replica su ogni no
 ### 7. PVC + Pod (pvc-ns)
 **Obiettivo:**
 
-Creazione di un PVC wp-pvc da 1GiB e associazione ad un pod Nginx. Creare anche un PV corrispondente (di tipo hostPath).
+Creazione di un PVC wp-pvc da 1GiB e associazione ad un pod Nginx già esistente. Creare anche un PV wp-pv corrispondente (di tipo hostPath).
 
 ### 8. Sidecar Container (sidecar-ns)
 **Obiettivo:**
