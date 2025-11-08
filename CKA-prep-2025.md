@@ -1876,15 +1876,28 @@ k taint nodes worker3-k8s key=value:NoSchedule-
 **Obiettivo:**
 
 Creare un PersistentVolume (PV) local-pv da 1GB e un PersistentVolumeClaim (PVC) local-pvc che lo usa.
-Utilizzare la storageclass local-path (Nota: la storageclass è già installata). 
+Creare la storageclass local-path che utilizza il provisioner rancher.io/local-path e imposta il volumeBindingMode a WaitForFirstConsumer. 
 Infine, deployare un Pod pv-pod con immagine busybox:1.28 che monta il PVC ed esegue il comando "sleep 3600".
 
-**Prerequisito:** installare sul cluster una storageclass locale, ad esempio local-path
-
 **Risoluzione:**
-Creare il PV:
+Creare la storageclass local-path, editando il file 19.sc.yaml:
+```
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-path
+provisioner: rancher.io/local-path
+volumeBindingMode: WaitForFirstConsumer
 
-19.pv.yaml
+```
+
+Creare la storageclass:
+```
+k apply -f 19.sc.yaml
+```
+ 
+
+Creare il PV editanto il 19.pv.yaml
 ```
 apiVersion: v1
 kind: PersistentVolume
@@ -1907,11 +1920,12 @@ spec:
           values: 
           - worker3-k8s
 ```
+Creare il PV:
 ```
 k apply -f 19.pv.yaml
 ```
 
-Creare il PVC:
+Creare il PVCi editando il file 19.pvc.yaml:
 ```
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -1925,6 +1939,8 @@ spec:
   accessModes:
   - ReadWriteOnce
   storageClassName: local-path 
+
+k apply -f 19.pvc.yaml
 ```
 
 Creare il pod:
