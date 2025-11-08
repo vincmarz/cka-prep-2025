@@ -131,10 +131,8 @@ Simulare il failure di un nodo.
 **Obiettivo:**
 
 Creare un PersistentVolume (PV) local-pv da 1GB e un PersistentVolumeClaim (PVC) local-pvc che lo usa.
-Utilizzare la storageclass local-path (Nota: la storageclass è già installata). 
+Creare la storageclass local-path che utilizza il provisioner rancher.io/local-path e imposta il volumeBindingMode a WaitForFirstConsumer.
 Infine, deployare un Pod pv-pod con immagine busybox:1.28 che monta il PVC ed esegue il comando "sleep 3600".
-
-**Prerequisito:** installare sul cluster una storageclass locale, ad esempio local-path 
 
 ### 20. StatefulSet (stateful-ns)
 **Obiettivo:**
