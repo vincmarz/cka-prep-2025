@@ -114,7 +114,7 @@ Correggere l'errore e riavviare il pod.
 ### 16. DaemonSet (ds-ns)
 **Obiettivo:**
 
-Deploy di un agent su tutti i nodi. Nel namespace ds-ns, creare un daemoset busybox-agent per deployare l'agent su tutti i nodi del cluster.
+Deploy di un agent su tutti i nodi. Nel namespace ds-ns, creare un daemoset busybox-agent per fare il deploy dell'agent su tutti i nodi del cluster.
  
 ### 17. NetworkPolicy (netpol-ns)
 **Obiettivo:** 
@@ -132,7 +132,7 @@ Simulare il failure di un nodo.
 
 Creare un PersistentVolume (PV) local-pv da 1GB e un PersistentVolumeClaim (PVC) local-pvc che lo usa.
 Creare la storageclass local-path che utilizza il provisioner rancher.io/local-path e imposta il volumeBindingMode a WaitForFirstConsumer.
-Infine, deployare un Pod pv-pod con immagine busybox:1.28 che monta il PVC ed esegue il comando "sleep 3600".
+Infine, fare il deploy di un Pod pv-pod con immagine busybox:1.28 che monta il PVC ed esegue il comando "sleep 3600".
 
 ### 20. StatefulSet (stateful-ns)
 **Obiettivo:**
