@@ -1281,7 +1281,25 @@ Certificate:
 
 Installazione del plugin di Network Calico. Installare il CNI Calico utilizzando l'operator Tigera (https://raw.githubusercontent.com/projectcalico/calico/v3.31.0/manifests/tigera-operator.yaml).
 
-**Nota:** Solo su cluster non gestito (bare metal, kubeadm). Evitare se CNI già presente.
+**Prerequisito:** In una VM Ubuntu, installare un cluster Kubernetes con kind.
+
+Installare un cluster Kubernetes con kind:
+```
+cat <<EOF | sudo kind create cluster --name calico-cluster --config=-
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  disableDefaultCNI: true
+  podSubnet: "192.168.0.0/16"
+nodes:
+  - role: control-plane
+  - role: worker
+EOF
+```
+Impostare il contesto:
+```
+kubectl cluster-info --context kind-calico-cluster
+```
 
 **Risoluzione:**
 
@@ -1291,14 +1309,50 @@ Installare l'operator Tigera e le relative CRD:
 kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.31.0/manifests/tigera-operator.yaml
 ```
 
-Installare Calico: 
+Scaricare la configurazione di installazione di Calico: 
 ```
-kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.31.0/manifests/custom-resources.yaml
+wget https://raw.githubusercontent.com/projectcalico/calico/v3.31.0/manifests/custom-resources.yaml
+```
+Editare la configurazione, lasciando inalterate le risorse per l'API server di Calico, il Calico Goldmane flow aggregator e il Calico Whisker observability UI:
+
+```
+# This section includes base Calico installation configuration.
+# For more information, see: https://docs.tigera.io/calico/latest/reference/installation/api#operator.tigera.io/v1.Installation
+apiVersion: operator.tigera.io/v1
+kind: Installation
+metadata:
+  name: default
+spec:
+  # Configures Calico networking.
+  calicoNetwork:
+    bgp: Enabled                      # ADD
+    ipPools:
+      - name: default-ipv4-ippool
+        blockSize: 26
+        cidr: 192.168.0.0/16
+        encapsulation: VXLAN          # CHANGE
+        natOutgoing: Enabled
+        nodeSelector: all()
+
+[... Non modificare resto del file ...]
+```
+
+Installare la configurazione di Calico:
+
+```
+kubectl create -f custom-resources.yaml
 ```
 
 Verifica dei componenti di Calico:
 ```
-watch kubectl get tigerastatus
+kubectl get tigerastatus
+NAME        AVAILABLE   PROGRESSING   DEGRADED   SINCE
+apiserver   True        False         False      5m6s
+calico      True        False         False      4m56s
+goldmane    True        False         False      5m46s
+ippools     True        False         False      24m
+whisker     True        False         False      5m16s
+
 ```
 <a name="rbac-ns"></a>
 ### 12. RBAC (rbac-ns)
