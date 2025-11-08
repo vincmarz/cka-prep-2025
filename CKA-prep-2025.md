@@ -1579,7 +1579,7 @@ k -n debug-ns edit pod/crash-pod
 spec:
   containers:
   - command:
-    - "false"                            # Comando in errore
+    - "sleep 1d"                            # Comando in errore
     image: busybox
     imagePullPolicy: Always
     name: crash-container
@@ -1593,9 +1593,9 @@ k -n debug-ns get pod/crash-pod -o yaml > 15.pod.yaml
 spec:
   containers:
   - command:
-    - "sh"										# CHANGE					
-    - "-c"										# CHANGE
-    - "sleep 1d"                            	# CHANGE
+    - "sh"										# ADD	
+    - "-c"										# ADD
+    - "sleep 1d"                           
     image: busybox
     imagePullPolicy: Always
     name: crash-container
