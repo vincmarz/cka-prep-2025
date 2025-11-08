@@ -1640,10 +1640,14 @@ spec:
     resources: {}
 [...]
 ```
-Esportare lo YAML del pod e corregere il comando:
+Esportare lo YAML del pod e correggere il comando:
 ```
 k -n debug-ns get pod/crash-pod -o yaml > 15.pod.yaml
+```
+Editare il file:
 
+```
+[...]
 spec:
   containers:
   - command:
@@ -1655,6 +1659,12 @@ spec:
     name: crash-container
     resources: {}
 [...]
+```
+Sostituire il pod con la nuova versione:
+
+```
+k -n debug-ns delete pod/crash-pod
+k apply -f 15.pod.yaml
 ```
 
 <a name="ds-ns"></a>
