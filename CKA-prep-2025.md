@@ -1299,6 +1299,7 @@ EOF
 Impostare il contesto:
 ```
 kubectl cluster-info --context kind-calico-cluster
+kubectl config use-context kind-calico-cluster
 ```
 
 **Risoluzione:**
@@ -1334,7 +1335,7 @@ spec:
         natOutgoing: Enabled
         nodeSelector: all()
 
-[... Non modificare resto del file ...]
+[... Non modificare il resto del file ...]
 ```
 
 Installare la configurazione di Calico:
