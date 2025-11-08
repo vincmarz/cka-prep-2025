@@ -1671,7 +1671,7 @@ k apply -f 15.pod.yaml
 ### 16. DaemonSet (ds-ns)
 **Obiettivo:**
 
-Deploy di un agent su tutti i nodi. Nel namespace ds-ns, creare un daemoset busybox-agent per deployare l'agent su tutti i nodi del cluster.
+Deploy di un agent su tutti i nodi. Nel namespace ds-ns, creare un daemoset busybox-agent per fare il deploy dell'agent su tutti i nodi del cluster.
  
 **Risoluzione:**
 ```
@@ -1877,7 +1877,7 @@ k taint nodes worker3-k8s key=value:NoSchedule-
 
 Creare un PersistentVolume (PV) local-pv da 1GB e un PersistentVolumeClaim (PVC) local-pvc che lo usa.
 Creare la storageclass local-path che utilizza il provisioner rancher.io/local-path e imposta il volumeBindingMode a WaitForFirstConsumer. 
-Infine, deployare un Pod pv-pod con immagine busybox:1.28 che monta il PVC ed esegue il comando "sleep 3600".
+Infine, fare il deploy di un Pod pv-pod con immagine busybox:1.28 che monta il PVC ed esegue il comando "sleep 3600".
 
 **Risoluzione:**
 Creare la storageclass local-path, editando il file 19.sc.yaml:
