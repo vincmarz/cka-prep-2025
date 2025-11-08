@@ -22,7 +22,6 @@ namespaces=(
   storage-ns
   stateful-ns
   batch-ns
-  ingress-ns
   helm-ns 
   multi-ns 
   crd-ns 
