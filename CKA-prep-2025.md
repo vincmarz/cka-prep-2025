@@ -65,7 +65,7 @@ stabilizationWindowSecond per lo scaleDown a 30 secondi.
 
 Creare un horizontalpodautoscalers hpa-app:
 ```
-kubectl autoscale deployment hpa-app --cpu-percent=50 --min=1 --max=5 --dyr-run=client -o yaml > 1.hpa.yaml
+kubectl autoscale deployment hpa-app --min=1 --max=5 --dyr-run=client -o yaml > 1.hpa.yaml
 ```
 
 Editare il file 1.hpa.yaml per aggiornare la versione e aggiungere i parametri richiesti:
@@ -85,7 +85,6 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: hpa-app
-  targetCPUUtilizationPercentage: 50                  # DELETE
   metrics:                                            # ADD
    - type: Resource                                   # ADD
      resource:                                        # ADD
