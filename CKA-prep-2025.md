@@ -483,7 +483,7 @@ k -n quota-ns describe deployments.apps wordpress
 ```
 **Nota:** per le impostazioni delle quota si deve tenere conto anche del deployment mysql.
 
-Il deployment mysql non ha request e limit impostatati: occorre quindi definire i seguenti valori:
+Il deployment mysql non ha request e limit impostati pertanto occorre definire i seguenti valori:
 
 limits.cpu: 250m 
 limits.memory: 256Mi
