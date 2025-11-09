@@ -485,10 +485,10 @@ k -n quota-ns describe deployments.apps wordpress
 
 Il deployment mysql non ha request e limit impostati pertanto occorre definire i seguenti valori:
 
-limits.cpu: 250m 
-limits.memory: 256Mi
-requests.cpu: 125m
-requests.memory: 256Mi
+- limits.cpu: 250m 
+- limits.memory: 256Mi
+- requests.cpu: 125m
+- requests.memory: 256Mi
 
 Considerando che abbiamo due deployment in replica 3 avremo:
 
