@@ -483,11 +483,11 @@ k -n quota-ns describe deployments.apps wordpress
 ```
 **Nota:** per le impostazioni delle quota si deve tenere conto anche del deployment mysql.
 
-Il deployment mysql non ha request e limit impostati pertanto occorre definire i seguenti valori:
+Il deployment mysql non ha request e limit impostati pertanto si definiscono gli stessi valori del deployment mysql:
 
-- limits.cpu: 250m 
-- limits.memory: 256Mi
-- requests.cpu: 125m
+- limits.cpu: 500m 
+- limits.memory: 512Mi
+- requests.cpu: 250m
 - requests.memory: 256Mi
 
 Considerando che abbiamo due deployment in replica 3 avremo:
@@ -523,7 +523,7 @@ Totale (WordPress + MySQL) :
 Impostare i limiti e le requests:
 
 ```
-kubectl -n quota-ns create quota wordpress-quota --hard=requests.cpu=2,requests.memory=2Gi,limits.cpu=3,limits.memory=4Gi
+kubectl -n quota-ns create quota wordpress-quota --hard=requests.cpu=2,requests.memory=2Gi,limits.cpu=3,limits.memory=3Gi
 
 kubectl describe quota wordpress-quota -n quota-ns
 Name:            wordpress-quota
@@ -531,7 +531,7 @@ Namespace:       quota-ns
 Resource         Used    Hard
 --------         ----    ----
 limits.cpu       3       3
-limits.memory    3Gi     4Gi
+limits.memory    3Gi     3Gi
 requests.cpu     1500m   2
 requests.memory  1536Mi  2Gi
 ```
