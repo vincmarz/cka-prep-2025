@@ -653,10 +653,10 @@ spec:
   - image: busybox:1.28
     name: main-app                     										 								# CHANGE
     command: [ "sh", "-c", "while true; do echo 'main running' >> /var/log/main-app.log; sleep 10; done" ] 	# ADD 
-    volumeMounts:                                             # ADD
-    - name:                                                   # ADD
-      mountPath: /var/log                                     # ADD
-  - image: busybox:1.28																						#  ADD
+    volumeMounts:                                                         # ADD
+    - name:                                                               # ADD
+      mountPath: /var/log                                                 # ADD
+  - image: busybox:1.28																						# ADD
     name: sidecar																							# ADD	
     command: [ "sh", "-c", "tail -n+1 -f /var/log/main-app.log" ]    										# ADD
     resources: {}
